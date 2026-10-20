@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - LuxeEstate</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top custom-navbar bg-white shadow-sm navbar-light">
+        <div class="container">
+            <a class="navbar-brand text-dark" href="/">
+                <i class="fa-solid fa-building-user me-2 text-primary"></i>
+                <span class="fw-bold">LuxeEstate</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="listings.html">Listings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="add-property.html">Add Property</a></li>
+                    <li class="nav-item"><a class="nav-link" href="predict.html"><i
+                                class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Predict Price</a></li>
+                    <li class="nav-item"><a class="nav-link" href="favorites.html"><i class="fa-regular fa-heart"></i>
+                            Favorites</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="notifications.html">
+                            <i class="fa-regular fa-bell"></i>
+                            <span id="navNotificationBadge"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                                style="font-size: 0.6rem;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="admin-login.html"><i class="fa-solid fa-shield-halved me-1"></i> Admin</a></li>
+                    <li class="nav-item ms-lg-3"><a class="btn btn-outline-primary rounded-pill px-4 me-2"
+                            href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary rounded-pill px-4 shadow-sm" href="signup.html">Sign
+                            Up</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Property Details Wrapper -->
+    <div class="container py-5 mt-5">
+
+        <!-- Header Info -->
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom reveal reveal-up">
+            <div>
+                <span id="detailStatusBadge" class="badge bg-success-soft text-success px-3 py-2 rounded-pill mb-2">For Sale</span>
+                <span id="detailTypeBadge" class="badge bg-secondary-soft text-secondary px-3 py-2 rounded-pill mb-2 ms-2">House</span>
+                <h1 class="display-6 fw-bold mb-2" id="detailTitle">Loading Property...</h1>
+                <p class="text-muted d-flex align-items-center mb-0" id="detailLocation"><i
+                        class="fa-solid fa-location-dot text-primary me-2"></i> ...</p>
+            </div>
+            <div class="text-md-end mt-3 mt-md-0">
+                <h2 class="text-primary fw-bold mb-2" id="detailPrice">PKR 0</h2>
+                <div class="d-flex gap-2 justify-content-md-end">
+                    <button class="btn btn-outline-dark rounded-circle"><i class="fa-solid fa-share-nodes"></i></button>
+                    <button class="btn btn-outline-danger rounded-circle"><i class="fa-regular fa-heart"></i></button>
+                    <button id="openPaymentModalBtn" class="btn btn-success rounded-pill px-4"><i class="fa-solid fa-shield-halved me-2"></i>Pay Securely</button>
+                    <button class="btn btn-primary rounded-pill px-4"><i class="fa-solid fa-print me-2"></i>
+                        Print</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Gallery & Details -->
+            <div class="col-lg-8">
+
+                <!-- Gallery Section -->
+                <div class="property-gallery mb-5 reveal reveal-up" style="transition-delay: 0.2s;">
+                    <div class="position-relative mb-3 overflow-hidden rounded-4">
+                        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            id="mainPropertyImage" class="gallery-main shadow-sm" alt="Main Property Image">
+                        <span class="position-absolute top-0 start-0 m-3 ai-badge rounded-pill px-3 py-1 shadow-sm"><i
+                                class="fa-solid fa-camera me-2"></i> 1/5</span>
+                    </div>
+
+                    <div class="row g-2 reveal-stagger">
+                        <div class="col-3"><img
+                                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                class="gallery-thumb active" alt="Thumb"></div>
+                        <div class="col-3"><img
+                                src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                class="gallery-thumb" alt="Thumb"></div>
+                        <div class="col-3"><img
+                                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                class="gallery-thumb" alt="Thumb"></div>
+                        <div class="col-3">
+                            <div class="position-relative h-100">
+                                <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                    class="gallery-thumb" alt="Thumb">
+                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded text-white d-flex align-items-center justify-content-center fw-bold fs-5 cursor-pointer"
+                                    style="pointer-events: none;">+2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm mb-4 reveal reveal-up">
+                    <h4 class="fw-bold mb-4">Property Description</h4>
+                    <p class="text-muted" id="detailDescription">Loading details...</p>
+                </div>
+
+                <!-- Features Section -->
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm mb-4 reveal reveal-up">
+                    <h4 class="fw-bold mb-4">Property Details</h4>
+                    <div class="row g-4 mb-5 pb-5 border-bottom reveal-stagger">
+                        <!-- ... -->
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex align-items-center text-muted">
+                                <div class="icon-box bg-secondary bg-opacity-10 text-secondary rounded p-3 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fa-solid fa-bed fs-5"></i>
+                                </div>
+                                <div>
+                                    <small class="d-block">Bedrooms</small>
+                                    <strong class="text-dark fs-5" id="detailBeds">0</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex align-items-center text-muted">
+                                <div class="icon-box bg-info bg-opacity-10 text-info rounded p-3 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fa-solid fa-layer-group fs-5"></i>
+                                </div>
+                                <div>
+                                    <small class="d-block">Stories / Floors</small>
+                                    <strong class="text-dark fs-5" id="detailStories">Single Story</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex align-items-center text-muted">
+                                <div class="icon-box bg-success bg-opacity-10 text-success rounded p-3 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fa-solid fa-kitchen-set fs-5"></i>
+                                </div>
+                                <div>
+                                    <small class="d-block">Kitchens</small>
+                                    <strong class="text-dark fs-5" id="detailKitchens">0</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex align-items-center text-muted">
+                                <div class="icon-box bg-warning bg-opacity-10 text-warning rounded p-3 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fa-solid fa-vector-square fs-5"></i>
+                                </div>
+                                <div>
+                                    <small class="d-block">Size</small>
+                                    <strong class="text-dark fs-5" id="detailArea">0 <span class="fs-6">Marla</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="fw-bold mb-4">Amenities</h4>
+                    <div class="row g-3" id="detailAmenities">
+                        <!-- Amenities will be loaded here -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="col-lg-4">
+
+                <!-- Contact Agent Form -->
+                <div class="filter-sidebar mb-4 sticky-top bg-white p-4 rounded-4 shadow-sm reveal reveal-right" style="top: 100px; z-index: 10; max-height: calc(100vh - 120px); overflow-y: auto;">
+                    <div class="text-center mb-4">
+                        <!-- Profile Initials instead of Image -->
+                        <div id="agentInitials" class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3 shadow fs-1 fw-bold" style="width: 80px; height: 80px;">
+                            LE
+                        </div>
+                        <h5 id="agentName" class="fw-bold mb-1">LuxeEstate Agent</h5>
+                        <p id="agentRole" class="text-primary small fw-semibold mb-2">Property Consultant</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-light text-dark border"><i class="fa-solid fa-star text-warning"></i>
+                                4.9 (120 reviews)</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-light rounded-4 p-3 mb-3 border">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <div>
+                                <p class="text-primary text-uppercase fw-bold small mb-1">Secure Purchase</p>
+                                <h6 class="fw-bold mb-1">Book or buy online</h6>
+                                <small class="text-muted">The backend validates the price and applies the 10% admin commission automatically.</small>
+                            </div>
+                            <i class="fa-solid fa-lock text-primary fs-4"></i>
+                        </div>
+                        <button id="sidebarPayBtn" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-sm">
+                            <i class="fa-solid fa-credit-card me-2"></i> Proceed to Payment
+                        </button>
+                    </div>
+
+                    <!-- Chat Section -->
+                    <div class="mt-4 pt-4 border-top">
+                        <button id="chatOwnerBtn" class="btn btn-outline-primary w-100 rounded-pill py-3 fw-bold mb-3" data-bs-toggle="modal" data-bs-target="#chatModal">
+                            <i class="fa-solid fa-comments me-2"></i> Real-time Chat with Owner
+                        </button>
+                    </div>
+
+                    <form id="contactAgentForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <input type="text" id="contactName" class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-pill"
+                                placeholder="Username" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" id="contactEmail"
+                                class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-pill"
+                                placeholder="Your Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" id="contactPhone" class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-pill"
+                                placeholder="Your Phone" required>
+                        </div>
+                        <div class="mb-4">
+                            <textarea id="contactMessageText" class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-4" rows="4"
+                                placeholder="I'm interested in this property..." required></textarea>
+                        </div>
+                        <div id="rentalInquirySection" class="bg-white rounded-4 p-4 mb-3 border d-none">
+                            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1">Rental Duration</h6>
+                                    <p class="text-muted small mb-0">Visible only for apartment rentals.</p>
+                                </div>
+                                <span class="badge bg-primary-soft text-primary rounded-pill px-3 py-2">Apartment for rent</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Start Date</label>
+                                    <input type="date" id="rentalStartDate" class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-pill">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-dark">End Date</label>
+                                    <input type="date" id="rentalEndDate" class="form-control bg-light border-0 shadow-none px-4 py-3 rounded-pill">
+                                </div>
+                                <div class="col-12">
+                                    <div class="bg-light rounded-4 p-3 border">
+                                        <small class="text-muted d-block mb-1">Auto-calculated duration</small>
+                                        <strong id="rentalDurationSummary">Select start and end dates to calculate the total rental duration.</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" id="contactSubmitBtn"
+                            class="btn btn-primary w-100 rounded-pill py-3 fw-bold mb-3 shadow-sm">Send Message</button>
+
+                        <div class="d-flex flex-column gap-2">
+                            <a href="#" id="whatsappBtn" target="_blank" class="btn btn-outline-success w-100 rounded-pill py-2 text-decoration-none">
+                                <i class="fa-brands fa-whatsapp me-2"></i>WhatsApp
+                            </a>
+                            <a href="tel:+923497210094" class="btn btn-outline-dark w-100 rounded-pill py-2 text-decoration-none">
+                                <i class="fa-solid fa-phone me-2"></i>Call
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <div class="modal-header bg-primary text-white border-0 py-3">
+                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-comments me-2"></i> Chat with Waqas</h6>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="chatMessages" class="p-4 overflow-auto" style="height: 350px; background: #f8f9fa;">
+                        <!-- Messages go here -->
+                        <div class="text-center text-muted small py-5">Connecting to secure chat...</div>
+                    </div>
+                    <div class="p-3 border-top bg-white">
+                        <div class="input-group">
+                            <input type="text" id="chatInput" class="form-control border-0 shadow-none px-3" placeholder="Type your message...">
+                            <button id="sendChatBtn" class="btn btn-primary rounded-pill px-4 ms-2"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl payment-modal-shell">
+            <div class="modal-content border-0 rounded-5 overflow-hidden payment-modal-surface">
+                <div class="modal-header payment-modal-header border-0">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="payment-badge-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div>
+                            <p class="small text-uppercase text-white-50 fw-semibold mb-1">Secure Checkout</p>
+                            <h5 class="modal-title fw-bold text-white mb-1">Complete Property Payment</h5>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="payment-status-pill status-pending" id="paymentStatusPill"><i class="fa-solid fa-circle-notch fa-spin me-2"></i>Preparing transaction</span>
+                                <span class="payment-secure-pill"><i class="fa-solid fa-lock me-2"></i>Protected Payment Session</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body payment-modal-body">
+                    <div class="payment-hero mb-4">
+                        <div>
+                            <p class="payment-kicker">2026 Fintech-style settlement</p>
+                            <h3 class="payment-hero-title">Premium, secure, and mobile-first property payment flow.</h3>
+                        </div>
+                        <div class="payment-hero-meta">
+                            <div class="payment-meta-card">
+                                <span class="payment-meta-label">Transaction</span>
+                                <strong id="paymentReferenceHero">-</strong>
+                            </div>
+                            <div class="payment-meta-card">
+                                <span class="payment-meta-label">Status</span>
+                                <strong id="paymentStatusText">Awaiting action</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-xl-4">
+                            <div class="payment-summary-card glass-card h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="fw-bold mb-0">Payment Summary</h6>
+                                    <span class="badge rounded-pill text-bg-dark-subtle payment-surface-chip"><i class="fa-solid fa-receipt me-1"></i>Live breakdown</span>
+                                </div>
+                                <div class="summary-stack">
+                                    <div class="summary-line">
+                                        <span>Total Property Amount</span>
+                                        <strong id="paymentTotalAmount">PKR 0</strong>
+                                    </div>
+                                    <div class="summary-line summary-accent warning">
+                                        <span>Admin Commission</span>
+                                        <strong id="paymentCommissionAmount">PKR 0</strong>
+                                    </div>
+                                    <div class="summary-line summary-accent success">
+                                        <span>Seller Receives</span>
+                                        <strong id="paymentSellerAmount">PKR 0</strong>
+                                    </div>
+                                    <div class="summary-line summary-accent info">
+                                        <span>Payment Status</span>
+                                        <strong id="paymentStatusSummary">Pending</strong>
+                                    </div>
+                                </div>
+                                <div class="payment-summary-footer">
+                                    <span id="paymentPropertyTitle">-</span>
+                                    <small>Validated server-side before completion.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-8">
+                            <form id="paymentForm" class="payment-form glass-card needs-validation" novalidate>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="field-label-row">
+                                            <label class="form-label fw-semibold mb-0">Payment Method</label>
+                                            <button type="button" class="btn btn-link p-0 text-decoration-none small" id="paymentMethodHelp">Search</button>
+                                        </div>
+                                        <div class="searchable-select">
+                                            <input id="paymentMethodSearch" class="form-control form-control-lg rounded-4 bg-light border-0" placeholder="Search payment methods" autocomplete="off">
+                                            <select id="paymentMethod" class="form-select rounded-4 bg-light border-0 py-3 searchable-select-native" required>
+                                                <option value="">Choose a payment method</option>
+                                                <option value="card">Card</option>
+                                                <option value="bank_transfer">Bank Transfer</option>
+                                                <option value="jazzcash">JazzCash</option>
+                                                <option value="easypaisa">Easypaisa</option>
+                                                <option value="wallet">Digital Wallet</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6">
+                                        <label class="form-label fw-semibold">Account</label>
+                                        <div class="searchable-select">
+                                            <input id="paymentAccountSearch" class="form-control form-control-lg rounded-4 bg-light border-0" placeholder="Search accounts" autocomplete="off">
+                                            <select id="paymentAccount" class="form-select rounded-4 bg-light border-0 py-3 searchable-select-native" required>
+                                                <option value="">Choose an account</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div id="paymentAccountInfo" class="account-card-grid"></div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Full Name</label>
+                                        <input type="text" id="paymentName" class="form-control form-control-lg rounded-4 bg-light border-0" placeholder="Your name" required>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Email Address</label>
+                                        <input type="email" id="paymentEmail" class="form-control form-control-lg rounded-4 bg-light border-0" placeholder="name@example.com" required>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Phone Number</label>
+                                        <input type="tel" id="paymentPhone" class="form-control form-control-lg rounded-4 bg-light border-0" placeholder="03xx xxx xxxx" required>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Property Reference</label>
+                                        <div class="copy-field">
+                                            <input type="text" id="paymentReference" class="form-control form-control-lg rounded-4 bg-light border-0 pe-5" readonly>
+                                            <button type="button" class="copy-btn" data-copy-target="paymentReference" aria-label="Copy property reference"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Notes</label>
+                                        <textarea id="paymentNotes" class="form-control rounded-4 bg-light border-0 payment-notes" rows="4" placeholder="Optional note for the seller or admin"></textarea>
+                                    </div>
+                                </div>
+                                <div class="payment-validation-row mt-4">
+                                    <div id="paymentValidationText" class="payment-validation-text">Fill the required fields to continue.</div>
+                                    <div class="payment-inline-actions">
+                                        <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" id="confirmPaymentBtn" class="btn btn-primary rounded-pill px-4 fw-bold payment-submit-btn">
+                                            <i class="fa-solid fa-lock me-2"></i> Confirm Secure Payment
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="payment-security-notice mt-4">
+                                    <div class="security-notice-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                                    <div>
+                                        <strong>Payment protection active</strong>
+                                        <p class="mb-0">Sensitive payment data is never stored. Funds are validated, commissions are deducted, and the seller payout is logged in real time.</p>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row g-4 mt-1">
+                        <div class="col-lg-7">
+                            <div class="glass-card timeline-card h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="fw-bold mb-0">Transaction Timeline</h6>
+                                    <span class="timeline-live"><span class="timeline-dot"></span> Live</span>
+                                </div>
+                                <div class="timeline-list" id="paymentTimeline">
+                                    <div class="timeline-item active">
+                                        <span class="timeline-marker"><i class="fa-solid fa-paper-plane"></i></span>
+                                        <div>
+                                            <strong>Payment initiated</strong>
+                                            <p>Begin the secure transaction flow.</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <span class="timeline-marker"><i class="fa-solid fa-circle-check"></i></span>
+                                        <div>
+                                            <strong>Payment verified</strong>
+                                            <p>Validation completes after account selection.</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <span class="timeline-marker"><i class="fa-solid fa-coins"></i></span>
+                                        <div>
+                                            <strong>Commission deducted</strong>
+                                            <p>Admin commission is calculated automatically.</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <span class="timeline-marker"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                                        <div>
+                                            <strong>Seller payout completed</strong>
+                                            <p>Net payout is recorded once the payment settles.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="glass-card h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="fw-bold mb-0">Payment Activity</h6>
+                                    <span class="badge rounded-pill bg-success-subtle text-success"><i class="fa-solid fa-bolt me-1"></i>Live updates</span>
+                                </div>
+                                <div id="paymentActivityFeed" class="activity-feed">
+                                    <div class="activity-feed-item">
+                                        <span class="activity-dot"></span>
+                                        <div>
+                                            <strong>Ready for checkout</strong>
+                                            <p>Choose a payment method and account to continue.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

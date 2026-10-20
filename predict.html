@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Price Prediction - LuxeEstate</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .prediction-hero {
+            background: linear-gradient(135deg, rgba(58, 5, 250, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            padding: 120px 0 80px;
+        }
+
+        .pulse-icon {
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-card {
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .input-animated {
+            transition: all 0.3s ease;
+            border: 2px solid transparent !important;
+            background-color: #f8f9fa !important;
+        }
+
+        .input-animated:focus {
+            background-color: #ffffff !important;
+            border-color: #4b09f1 !important;
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.15) !important;
+            transform: translateY(-2px);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            border-radius: 1rem;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.5s ease 0.3s;
+        }
+
+        #resultContainer {
+            display: none;
+        }
+
+        .animate-valuation {
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .custom-location-dropdown .accordion-button {
+            padding: 12px 20px;
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        .custom-location-dropdown .accordion-button:not(.collapsed) {
+            background-color: rgba(79, 70, 229, 0.05);
+            color: #4F46E5;
+            box-shadow: none;
+        }
+        .custom-location-dropdown .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0,0,0,.125);
+        }
+        .custom-location-dropdown .location-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+            color: #4b5563;
+        }
+        .custom-location-dropdown .location-item:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+            color: #4F46E5;
+            padding-left: 45px;
+        }
+        .custom-location-dropdown .location-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body class="professional-bg">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm custom-navbar navbar-light">
+        <div class="container">
+            <a class="navbar-brand text-dark" href="/">
+                <i class="fa-solid fa-building-user me-2 text-primary"></i>
+                <span class="fw-bold">LuxeEstate</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="listings.html">Listings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="add-property.html">Add Property</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="predict.html"><i
+                                class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Predict Price</a></li>
+                    <li class="nav-item"><a class="nav-link" href="favorites.html"><i class="fa-regular fa-heart"></i>
+                            Favorites</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="notifications.html">
+                            <i class="fa-regular fa-bell"></i>
+                            <span id="navNotificationBadge"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                                style="font-size: 0.6rem;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="admin-login.html"><i class="fa-solid fa-shield-halved me-1"></i> Admin</a></li>
+                    <li class="nav-item ms-lg-3"><a class="btn btn-outline-primary rounded-pill px-4 me-2"
+                            href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary rounded-pill px-4 shadow-sm" href="signup.html">Sign
+                            Up</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="prediction-hero text-white text-center">
+        <div class="container position-relative z-1">
+            <div class="icon-box bg-white bg-opacity-25 text-white rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center"
+                style="width: 80px; height: 80px;">
+                <i class="fa-solid fa-robot fs-2 pulse-icon"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">AI Property Valuation</h1>
+            <p class="lead text-white-75 mb-0 mx-auto" style="max-width: 600px;">Our advanced machine learning model
+                analyzes thousands of local market trends to instantly estimate your property's value.</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-5 mt-n4 position-relative z-1">
+        <div class="row justify-content-center position-relative" style="min-height: 600px;">
+
+            <!-- Form Section -->
+            <div class="col-lg-7 mb-4 transition-all reveal reveal-up" id="formContainer" style="transition-delay: 0.3s;">
+                <div class="card border-0 rounded-4 shadow-lg p-4 p-md-5 h-100 position-relative border-top border-4 border-primary glass-card">
+                    <h3 class="fw-bold mb-1 text-dark d-flex align-items-center">
+                        <i class="fa-solid fa-wand-magic-sparkles text-primary me-3 fs-4 pulse-icon"></i> Property Details
+                    </h3>
+                    <p class="text-muted small mb-4">Provide accurate information for the most precise AI valuation.</p>
+
+                    <form id="predictionForm" class="needs-validation" novalidate>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Location (City) *</label>
+                                <input type="text" class="form-control input-animated rounded-pill px-4 py-3" required id="location" placeholder="e.g. Lahore">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Property Type *</label>
+                                <select class="form-select input-animated rounded-pill px-4 py-3" required id="propertyType">
+                                    <option value="House">House</option>
+                                    <option value="Shop">Shop</option>
+                                    <option value="Plot">Plot</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Current Price (PKR)</label>
+                                <input type="number" class="form-control input-animated rounded-pill px-4 py-3" id="currentPrice" placeholder="e.g. 15000000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Size (Marla) *</label>
+                                <input type="number" step="any" min="0.1" class="form-control input-animated rounded-pill px-4 py-3" placeholder="e.g. 5" required id="areaSize">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Bedrooms</label>
+                                <input type="number" min="0" class="form-control input-animated rounded-pill px-4 py-3" id="bedrooms" placeholder="e.g. 3" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Valuation Year</label>
+                                <input type="number" class="form-control input-animated rounded-pill px-4 py-3" id="valuationYear" placeholder="e.g. 2026" value="2026">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Stories/Floors</label>
+                                <input type="number" min="1" class="form-control input-animated rounded-pill px-4 py-3" id="stories" placeholder="e.g. 2" value="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Number of Kitchens</label>
+                                <input type="number" min="0" class="form-control input-animated rounded-pill px-4 py-3" id="kitchens" placeholder="e.g. 1" value="0">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Market Trend *</label>
+                                <select class="form-select input-animated rounded-pill px-4 py-3 text-muted" required id="marketTrend">
+                                    <option value="stable">Stable</option>
+                                    <option value="up">Up</option>
+                                    <option value="down">Down</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-dark">Facilities</label>
+                                <div class="d-flex gap-3 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="gym">
+                                        <label class="form-check-label" for="gym">Gym</label>
+                                    </div>
+                                                                        <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="swimmingPool">
+                                        <label class="form-check-label" for="swimmingPool">Pool</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg"
+                            id="predictBtn" style="transition: transform 0.2s; background: linear-gradient(to right, #4F46E5, #312E81); border: none;">
+                            <i class="fa-solid fa-microchip me-2"></i> Generate AI Valuation
+                        </button>
+                    </form>
+
+                    <!-- Loading Overlay -->
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner-border text-primary border-4" style="width: 3.5rem; height: 3.5rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="fw-bold mt-4 text-dark">Analyzing Market Data...</h5>
+                        <p class="text-muted small">Comparing with 10,000+ recent sales</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div class="col-lg-6 mb-4" id="resultContainer">
+                <!-- Result Display -->
+                <div class="card border-0 rounded-4 shadow-lg h-100 result-card animate-valuation" id="resultBox" style="background: linear-gradient(135deg, rgba(58, 5, 250, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);">
+                    <div class="p-4 p-md-5">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold shadow-sm"><i
+                                    class="fa-solid fa-check-circle me-1"></i> Analysis Complete</span>
+                            <div class="text-end">
+                                <small class="text-white-50 d-block">Confidence Score</small>
+                                <span class="fw-bold fs-5 text-warning">94%</span>
+                            </div>
+                        </div>
+
+                        <h6 class="text-white-50 text-uppercase spacing-wide mb-1">Estimated Market Value</h6>
+                        <h2 class="display-4 fw-bold mb-0 text-white" id="predictedPrice">PKR 0</h2>
+                        <p class="text-white-75 mb-4 border-bottom border-light pb-4">Estimated range: <span
+                                id="lowerBound" class="fw-medium text-white"></span> - <span id="upperBound"
+                                class="fw-medium text-white"></span></p>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="bg-white bg-opacity-10 rounded-4 p-3 text-center" style="backdrop-filter: blur(10px);">
+                                    <h6 class="text-white-50 small mb-1">Price / Marla</h6>
+                                    <h5 class="fw-bold mb-0 text-white" id="pricePerMarla">PKR 0</h5>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-white bg-opacity-10 rounded-4 p-3 text-center" style="backdrop-filter: blur(10px);">
+                                    <h6 class="text-white-50 small mb-1">Market Trend</h6>
+                                    <h5 class="fw-bold mb-0 text-white" id="priceTrend">
+                                        <i class="fa-solid fa-clock me-1"></i> Forecasted
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul class="list-unstyled mb-4 text-white-75">
+                            <li class="mb-2"><i class="fa-solid fa-chart-line me-2 text-warning"></i> Neighborhood prices are up 3% this quarter.</li>
+                            <li class="mb-2"><i class="fa-solid fa-clock me-2 text-warning"></i> Homes typically sell in 18 days.</li>
+                        </ul>
+
+                        <p class="text-white-75 small mb-4" id="predictionExplanation"></p>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-center">
+                            <button class="btn btn-outline-light rounded-pill px-4" onclick="resetForm()"><i class="fa-solid fa-rotate-left me-2"></i> Predict Another</button>
+                            <button class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">Consult an Agent</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Prediction Logic Simulation
+        const formContainer = document.getElementById('formContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const form = document.getElementById('predictionForm');
+        const overlay = document.getElementById('loadingOverlay');
+        const resultBox = document.getElementById('resultBox');
+
+        function resetForm() {
+            resultContainer.style.display = 'none';
+            formContainer.style.display = 'block';
+            formContainer.classList.remove('fade-out');
+            formContainer.classList.add('fade-in');
+            form.reset();
+            form.classList.remove('was-validated');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                // Show Loader
+                overlay.style.display = 'flex';
+
+                // Get form data
+                const locationData = document.getElementById('location').value;
+                const propertyType = document.getElementById('propertyType').value;
+                const area = parseFloat(document.getElementById('areaSize').value);
+                const marketTrend = document.getElementById('marketTrend').value;
+                
+                const currentPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+                const bedrooms = parseInt(document.getElementById('bedrooms').value) || 0;
+                const valuationYear = parseInt(document.getElementById('valuationYear').value) || new Date().getFullYear();
+                const stories = parseInt(document.getElementById('stories').value) || 1;
+                const kitchens = parseInt(document.getElementById('kitchens').value) || 0;
+                const gym = document.getElementById('gym').checked ? 'Yes' : 'No';
+                const modernKitchen = document.getElementById('modernKitchen').checked ? 'Yes' : 'No';
+                const swimmingPool = document.getElementById('swimmingPool').checked ? 'Yes' : 'No';
+                
+                API.predictPrice({
+                    location: locationData,
+                    property_type: propertyType,
+                    area: area,
+                    market_trend: marketTrend,
+                    current_price: currentPrice,
+                    bedrooms: bedrooms,
+                    valuation_year: valuationYear,
+                    stories: stories,
+                    kitchens: kitchens,
+                    gym: gym,
+                    modern_kitchen: modernKitchen,
+                    swimming_pool: swimmingPool
+                })
+                .then(data => {
+                    const finalPrice = data.predicted_price;
+                    const trend = data.trend;
+                    const explanation = data.explanation || '';
+                    const lower = marketTrend.toLowerCase() === 'suitable' ? finalPrice : Math.floor(finalPrice * 0.92);
+                    const upper = marketTrend.toLowerCase() === 'suitable' ? finalPrice : Math.floor(finalPrice * 1.08);
+                    const pMarla = Math.floor(finalPrice / (area || 1));
+
+                    // Format UI
+                    document.getElementById('predictedPrice').textContent = 'PKR ' + finalPrice.toLocaleString();
+                    document.getElementById('lowerBound').textContent = 'PKR ' + lower.toLocaleString();
+                    document.getElementById('upperBound').textContent = 'PKR ' + upper.toLocaleString();
+                    document.getElementById('pricePerMarla').textContent = 'PKR ' + pMarla.toLocaleString();
+                    
+                    // Update Trend UI
+                    const trendElement = document.getElementById('priceTrend');
+                    if (trend === 'Increase') {
+                        trendElement.innerHTML = '<i class="fa-solid fa-arrow-trend-up me-1"></i> Increase';
+                        trendElement.className = 'fw-bold text-success mb-0';
+                    } else if (trend === 'Decrease') {
+                        trendElement.innerHTML = '<i class="fa-solid fa-arrow-trend-down me-1"></i> Decrease';
+                        trendElement.className = 'fw-bold text-danger mb-0';
+                    } else {
+                        trendElement.innerHTML = '<i class="fa-solid fa-minus me-1"></i> Stable';
+                        trendElement.className = 'fw-bold text-warning mb-0';
+                    }
+
+                    const explanationEl = document.getElementById('predictionExplanation');
+                    if (explanationEl) explanationEl.textContent = explanation;
+
+                    // Hide loader and transition views
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        formContainer.classList.add('fade-out');
+                        
+                        setTimeout(() => {
+                            formContainer.style.display = 'none';
+                            resultContainer.style.display = 'block';
+                            resultBox.style.display = 'block';
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 500);
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    overlay.style.display = 'none';
+                    alert('Prediction Error: ' + error.message);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

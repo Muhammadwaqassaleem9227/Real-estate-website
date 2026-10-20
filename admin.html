@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LuxeEstate</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Authentication Check -->
+    <style>
+        html.auth-pending body { display: none; }
+    </style>
+    <script>
+        document.documentElement.classList.add('auth-pending');
+        const adminToken = localStorage.getItem('token');
+        if (!adminToken) {
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/api.js?v=3"></script>
+
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #111827;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #111827;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            padding: 24px 0;
+            overflow-y: auto;
+            transition: transform 0.25s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 24px 12px;
+        }
+
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            margin: 4px 16px;
+            border-radius: 999px;
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-link-custom i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-link-custom:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .nav-link-custom.active {
+            background: #eef2ff;
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .content-area {
+            padding: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+        }
+
+        /* Tables */
+        .table-custom th {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #6B7280;
+            letter-spacing: 0.05em;
+            background: #F9FAFB;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-custom .user-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-custom .password-cell {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .password-pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #F3F4F6;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6B7280;
+        }
+
+        .admin-toast-container .toast {
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 999px;
+        }
+
+        .badge-success { background: #D1FAE5; color: #065F46; }
+        .badge-warning { background: #FEF3C7; color: #92400E; }
+        .badge-danger { background: #FEE2E2; color: #991B1B; }
+        .badge-primary { background: #DBEAFE; color: #1E40AF; }
+        .badge-info { background: #E0F2FE; color: #0369A1; }
+
+        .transaction-dashboard-hero {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.96), rgba(17, 24, 39, 0.96));
+            color: #fff;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+        }
+
+        .transaction-dashboard-hero .text-muted,
+        .transaction-dashboard-hero .small,
+        .transaction-dashboard-hero h3,
+        .transaction-dashboard-hero h5 {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .metric-tile, .chart-shell {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .metric-tile {
+            padding: 20px;
+            height: 100%;
+        }
+
+        .metric-tile .metric-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .metric-chip.success { background: #D1FAE5; color: #065F46; }
+        .metric-chip.warning { background: #FEF3C7; color: #92400E; }
+        .metric-chip.danger { background: #FEE2E2; color: #991B1B; }
+        .metric-chip.info { background: #DBEAFE; color: #1E40AF; }
+
+        .chart-shell {
+            padding: 20px;
+            height: 100%;
+        }
+
+        .chart-shell canvas {
+            width: 100% !important;
+            height: 320px !important;
+        }
+
+        .recent-transactions-table .table-custom td,
+        .recent-transactions-table .table-custom th {
+            white-space: nowrap;
+        }
+
+        .transaction-toolbar {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+        }
+
+        .transaction-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 1rem;
+        }
+
+        .transaction-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .transaction-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .transaction-card .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .transaction-card .amount-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 0;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .transaction-card .amount-line:first-of-type {
+            border-top: 0;
+        }
+
+        .transaction-card .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .transaction-card .card-meta span {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            font-size: 0.75rem;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .transaction-search-input {
+            min-width: 220px;
+        }
+
+        .transaction-preview-note {
+            border-left: 4px solid var(--primary-color);
+            background: rgba(79, 70, 229, 0.06);
+        }
+
+        .transaction-table-wrap {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .transaction-toolbar .row > * {
+                margin-bottom: 12px;
+            }
+            .transaction-search-input {
+                min-width: 100%;
+            }
+        }
+
+        .tab-section {
+            display: none;
+        }
+        .tab-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .table-custom th, .table-custom td { padding: 12px; }
+            .table-custom .user-actions { gap: 6px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar shadow-sm" id="sidebar">
+        <div class="sidebar-header d-flex justify-content-between align-items-center">
+            <a href="/" class="text-dark text-decoration-none fs-5 fw-bold d-flex align-items-center">
+                <i class="fa-solid fa-building-user text-primary me-2"></i> LuxeEstate Admin
+            </a>
+            <button class="btn btn-sm d-md-none" onclick="toggleSidebar()"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="py-3">
+            <div class="px-4 mb-2 text-uppercase text-muted" style="font-size: 0.7rem; font-weight: 600;">Main Menu</div>
+            <a class="nav-link-custom active" onclick="showTab('dashboard')"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a class="nav-link-custom" onclick="showTab('users')"><i class="fa-solid fa-users"></i> Users</a>
+            <a class="nav-link-custom" onclick="showTab('properties')"><i class="fa-solid fa-building"></i> Properties</a>
+            <a class="nav-link-custom" onclick="showTab('inquiries')"><i class="fa-solid fa-envelope"></i> Inquiries <span id="inquiryBadge" class="badge bg-primary ms-auto rounded-pill d-none">0</span></a>
+            <a class="nav-link-custom" onclick="showTab('approvals')"><i class="fa-solid fa-clipboard-check"></i> Approvals <span id="approvalBadge" class="badge bg-danger ms-auto rounded-pill d-none">0</span></a>
+            
+            <div class="px-4 mt-4 mb-2 text-uppercase text-muted" style="font-size: 0.7rem; font-weight: 600;">System</div>
+            <a class="nav-link-custom" onclick="showTab('ai-prediction')"><i class="fa-solid fa-robot"></i> AI Prediction</a>
+            <a class="nav-link-custom" onclick="showTab('notifications')"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <a class="nav-link-custom" onclick="showTab('cms')"><i class="fa-solid fa-pen-nib"></i> CMS</a>
+            <a class="nav-link-custom" onclick="showTab('reports')"><i class="fa-solid fa-file-invoice"></i> Reports</a>
+            <a class="nav-link-custom" onclick="showTab('transactions')"><i class="fa-solid fa-receipt"></i> Transactions</a>
+            <a class="nav-link-custom" onclick="showTab('settings')"><i class="fa-solid fa-gear"></i> Settings</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-light d-md-none me-3" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="position-relative d-flex align-items-center">
+                    <i class="fa-solid fa-search position-absolute text-muted" style="left: 12px;"></i>
+                    <input type="text" id="adminSearchInput" class="form-control rounded-pill bg-light border-0 ps-5" placeholder="Search everything..." style="width: 250px;">
+                    <button id="adminSearchBtn" class="btn btn-primary btn-sm rounded-pill ms-2 px-3 shadow-sm">Search</button>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light rounded-circle position-relative p-2" onclick="showTab('notifications')">
+                    <i class="fa-regular fa-bell"></i>
+                    <span id="adminTopNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.5rem; display: none;">0</span>
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-light rounded-pill dropdown-toggle d-flex align-items-center gap-2 border-0" type="button" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=4F46E5&color=fff" class="rounded-circle" width="32" height="32" alt="Admin">
+                        <span class="fw-medium d-none d-md-inline" id="adminNameDisplay">System Admin</span>
+                    </button>
+                    <script>
+                        // Immediate profile update script
+                        (function() {
+                            const adminName = localStorage.getItem('name') || 'System Admin';
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const displayElem = document.getElementById('adminNameDisplay');
+                                if(displayElem) displayElem.innerText = adminName;
+                                const adminAvatar = document.querySelector('.topbar img');
+                                if (adminAvatar) adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=4F46E5&color=fff`;
+                            });
+                        })();
+                    </script>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2">
+                        <li><a class="dropdown-item" href="#"><i class="fa-regular fa-user me-2"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-shield-halved me-2"></i> Security</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout()"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- 1. Dashboard Tab -->
+            <div id="dashboard" class="tab-section active">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                    <h3 class="fw-bold mb-0">Dashboard Overview</h3>
+                    <button class="btn btn-dark rounded-pill px-4" onclick="showTab('transactions')"><i class="fa-solid fa-receipt me-2"></i>Transaction</button>
+                </div>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted small fw-medium mb-1 text-uppercase">Total Users</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalUsers">...</h3>
+                                    <small class="text-success fw-medium"><i class="fa-solid fa-arrow-up"></i> 12% this month</small>
+                                </div>
+                                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted small fw-medium mb-1 text-uppercase">Total Properties</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalProperties">...</h3>
+                                    <small class="text-success fw-medium"><i class="fa-solid fa-arrow-up"></i> 5% this month</small>
+                                </div>
+                                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                    <i class="fa-solid fa-building"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted small fw-medium mb-1 text-uppercase">Total Revenue</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalRevenue">...</h3>
+                                    <small class="text-warning fw-medium">Requires attention</small>
+                                </div>
+                                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                                    <i class="fa-solid fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-muted small fw-medium mb-1 text-uppercase">AI Predictions</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalAIPredictions">...</h3>
+                                    <small class="text-success fw-medium"><i class="fa-solid fa-arrow-up"></i> 24% this week</small>
+                                </div>
+                                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card-panel h-100">
+                            <h5 class="fw-bold mb-4">Property Upload Trends</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="propertyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card-panel h-100">
+                            <h5 class="fw-bold mb-4">User Roles</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="userChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users List on Dashboard -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Registered Users</h5>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="showTab('users')">View All</button>
+                    </div>
+                    <div class="card-panel p-0 overflow-hidden">
+                        <div class="table-responsive">
+                            <table class="table table-custom mb-0 table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboardUserTable">
+                                    <!-- Users will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. User Management -->
+            <div id="users" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">User Management</h3>
+                    <button class="btn btn-primary rounded-pill"><i class="fa-solid fa-plus me-2"></i> Add User</button>
+                </div>
+
+                <div class="card-panel p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Security</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUserTable">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Property Management -->
+            <div id="properties" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Property Management</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary rounded-pill me-2" onclick="window.location.href='add-property.html'"><i class="fa-solid fa-plus me-2"></i> Add Property</button>
+                        <select id="adminPropertyTypeFilter" class="form-select rounded-pill">
+                            <option>All Types</option>
+                            <option>House</option>
+                            <option>Apartment</option>
+                            <option>Plot</option>
+                        </select>
+                        <select id="adminPropertyCityFilter" class="form-select rounded-pill">
+                            <option>All Cities</option>
+                            <option>Lahore</option>
+                            <option>Karachi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-panel p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Location</th>
+                                    <th>Size</th>
+                                    <th>Price (PKR)</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPropertyTable">
+                                <!-- Properties will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Inquiries / Messages -->
+            <div id="inquiries" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Property Inquiries</h3>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill" onclick="loadMessages()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
+                </div>
+
+                <div class="card-panel p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sender</th>
+                                    <th>Property</th>
+                                    <th>Message Preview</th>
+                                    <th>Recipient</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminMessageTable">
+                                <!-- Messages will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Approvals -->
+            <div id="approvals" class="tab-section">
+                <h3 class="fw-bold mb-4">Pending Approvals</h3>
+                <p class="text-muted mb-4">Review properties uploaded by sellers before they go live on the platform.</p>
+
+                <div id="approvalsContainer" class="row g-4">
+                    <div class="col-12 text-center py-5 text-muted">
+                        <div class="spinner-border text-primary mb-3"></div>
+                        <p>Loading pending approvals...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. AI Price Prediction -->
+            <div id="ai-prediction" class="tab-section">
+                <h3 class="fw-bold mb-4">AI Model Management</h3>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card-panel text-center">
+                            <h1 class="display-4 fw-bold text-primary mb-0">94%</h1>
+                            <p class="text-muted mb-0">Model Accuracy Score</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-panel text-center">
+                            <h1 class="display-4 fw-bold text-success mb-0">12k</h1>
+                            <p class="text-muted mb-0">Dataset Size (Properties)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-panel text-center">
+                            <h1 class="display-4 fw-bold text-info mb-0">2.5s</h1>
+                            <p class="text-muted mb-0">Avg Inference Time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <h5 class="fw-bold mb-3">Model Retraining</h5>
+                    <p class="text-muted">The model was last trained on <strong>Oct 15, 2023</strong>. Retraining incorporates newly approved properties to improve accuracy.</p>
+                    <div class="progress mb-4" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <button class="btn btn-primary rounded-pill px-4" onclick="triggerRetraining(this)"><i class="fa-solid fa-rotate me-2"></i> Trigger Retraining</button>
+                    <button class="btn btn-outline-secondary rounded-pill px-4 ms-2">View Logs</button>
+                </div>
+            </div>
+
+            <!-- 7. Notifications -->
+            <div id="notifications" class="tab-section">
+                <h3 class="fw-bold mb-4">Send Broadcast Notifications</h3>
+                
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card-panel">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Audience</label>
+                                    <select id="broadcastAudience" class="form-select rounded-pill bg-light border-0">
+                                        <option value="all_users">All Users</option>
+                                        <option value="users">Registered Users</option>
+                                        <option value="admins">Admins</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Notification Title</label>
+                                    <input id="broadcastTitle" type="text" class="form-control rounded-pill bg-light border-0" placeholder="e.g. New Feature Update">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-medium">Message Body</label>
+                                    <textarea id="broadcastMessage" class="form-control rounded-4 bg-light border-0" rows="4" placeholder="Enter notification content..."></textarea>
+                                </div>
+                                <button type="button" class="btn btn-primary w-100 rounded-pill" onclick="sendBroadcastNotification(this)"><i class="fa-solid fa-paper-plane me-2"></i> Send Notification</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card-panel">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Recent Broadcasts</h5>
+                            <ul id="broadcastList" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. CMS -->
+            <div id="cms" class="tab-section">
+                <h3 class="fw-bold mb-4">Content Management System</h3>
+                <div class="card-panel">
+                    <h5 class="fw-bold mb-3">Homepage Banners</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 position-relative bg-light">
+                                <span class="badge bg-success position-absolute top-0 end-0 m-3 shadow-sm">Active</span>
+                                <img id="cmsBannerImage" src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600" class="img-fluid rounded mb-3 shadow-sm">
+                                <input id="cmsBannerTitle" type="text" class="form-control form-control-sm mb-2 rounded-pill" value="Find Your Dream Home">
+                                <textarea id="cmsBannerSubtitle" class="form-control form-control-sm mb-2 rounded-4" rows="3">Luxury properties, trusted agents, and smart tools in one place.</textarea>
+                                <input id="cmsBannerImageUrl" type="url" class="form-control form-control-sm mb-2 rounded-pill" value="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200" placeholder="Banner image URL">
+                                <button class="btn btn-sm btn-outline-primary w-100 rounded-pill" onclick="updateCMSBanner(this)">Update Banner</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-3 border-top pt-4">Static Pages</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-light border rounded-pill" onclick="editStaticPage('about_us', 'About Us')"><i class="fa-solid fa-pen me-2 text-muted"></i> Edit About Us</button>
+                        <button class="btn btn-light border rounded-pill" onclick="editStaticPage('terms', 'Terms & Conditions')"><i class="fa-solid fa-pen me-2 text-muted"></i> Edit Terms & Conditions</button>
+                        <button class="btn btn-light border rounded-pill" onclick="editStaticPage('privacy', 'Privacy Policy')"><i class="fa-solid fa-pen me-2 text-muted"></i> Edit Privacy Policy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. Reports -->
+            <div id="reports" class="tab-section">
+                <h3 class="fw-bold mb-4">Reports & Analytics</h3>
+                <div class="card-panel">
+                    <div class="row align-items-end g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-medium">Report Type</label>
+                            <select id="reportTypeSelect" class="form-select rounded-pill bg-light border-0">
+                                <option>User Activity</option>
+                                <option>Property Uploads</option>
+                                <option>Transactions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-medium">Date Range</label>
+                            <select id="reportRangeSelect" class="form-select rounded-pill bg-light border-0">
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">This Quarter</option>
+                                <option value="365">This Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-danger rounded-pill me-2" onclick="exportReport('PDF')"><i class="fa-solid fa-file-pdf me-2"></i> Export PDF</button>
+                            <button class="btn btn-success rounded-pill" onclick="exportReport('Excel')"><i class="fa-solid fa-file-excel me-2"></i> Export Excel</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-custom border rounded-4 overflow-hidden">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>New Users</th>
+                                    <th>Properties Listed</th>
+                                    <th>AI Uses</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr><td colspan="4" class="text-center text-muted py-4">Loading reports...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Transactions -->
+            <div id="transactions" class="tab-section">
+                <div class="transaction-dashboard-hero mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <p class="small text-uppercase fw-semibold mb-1 opacity-75">Transaction Intelligence</p>
+                            <h3 class="fw-bold mb-2">Complete transaction analytics and revenue controls</h3>
+                            <p class="mb-0 opacity-75">Monitor commissions, seller payouts, payment health, and monthly revenue performance from one secure dashboard.</p>
+                        </div>
+                        <button class="btn btn-light rounded-pill px-4 fw-semibold" onclick="loadAdminPaymentsData()"><i class="fa-solid fa-rotate me-2"></i> Refresh Analytics</button>
+                    </div>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Total Revenue</p>
+                            <div class="metric-value text-success" id="transactionRevenue">PKR 0.00</div>
+                            <span class="metric-chip success mt-2"><i class="fa-solid fa-chart-line"></i> Paid only</span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Admin Commission</p>
+                            <div class="metric-value text-warning" id="transactionCommission">PKR 0.00</div>
+                            <span class="metric-chip warning mt-2"><i class="fa-solid fa-coins"></i> 10% share</span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Completed</p>
+                            <div class="metric-value text-primary" id="transactionCompletedCount">0</div>
+                            <span class="metric-chip info mt-2"><i class="fa-solid fa-circle-check"></i> Verified</span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Pending</p>
+                            <div class="metric-value text-secondary" id="transactionPendingCount">0</div>
+                            <span class="metric-chip info mt-2"><i class="fa-solid fa-hourglass-half"></i> Awaiting</span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Failed</p>
+                            <div class="metric-value text-danger" id="transactionFailedCount">0</div>
+                            <span class="metric-chip danger mt-2"><i class="fa-solid fa-triangle-exclamation"></i> Error rate</span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="metric-tile">
+                            <p class="text-muted small fw-medium mb-1 text-uppercase">Total Payout</p>
+                            <div class="metric-value text-info" id="transactionPayout">PKR 0.00</div>
+                            <span class="metric-chip info mt-2"><i class="fa-solid fa-hand-holding-dollar"></i> Seller net</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-7">
+                        <div class="chart-shell">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Monthly Earnings Analytics</h5>
+                                    <p class="text-muted small mb-0">Revenue performance over time from paid transactions.</p>
+                                </div>
+                                <span class="metric-chip info"><i class="fa-solid fa-chart-column"></i> Monthly</span>
+                            </div>
+                            <canvas id="monthlyEarningsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="chart-shell">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Property Sales Analytics</h5>
+                                    <p class="text-muted small mb-0">Distribution of completed payments by property category.</p>
+                                </div>
+                                <span class="metric-chip success"><i class="fa-solid fa-chart-pie"></i> Sales mix</span>
+                            </div>
+                            <canvas id="propertySalesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div id="transactionMethodSummary" class="alert alert-light border rounded-4 small text-muted mb-4">
+                    No transaction analytics loaded yet.
+                </div>
+                <div class="card-panel recent-transactions-table">
+                    <div class="transaction-toolbar mb-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <p class="text-muted small mb-1">Secure property purchase ledger</p>
+                                <h5 class="fw-bold mb-0">Recent Transactions</h5>
+                            </div>
+                            <button class="btn btn-outline-primary rounded-pill" onclick="loadAdminPaymentsData()"><i class="fa-solid fa-rotate me-2"></i> Refresh</button>
+                        </div>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-lg-5 col-md-6">
+                                <label class="form-label small fw-semibold">Search transactions</label>
+                                <input type="text" id="transactionSearchInput" class="form-control rounded-pill bg-light border-0 transaction-search-input" placeholder="Buyer, property, ID, method...">
+                            </div>
+                            <div class="col-lg-3 col-md-3">
+                                <label class="form-label small fw-semibold">Status filter</label>
+                                <select id="transactionStatusFilter" class="form-select rounded-pill bg-light border-0">
+                                    <option value="all">All statuses</option>
+                                    <option value="paid">Completed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="failed">Failed</option>
+                                    <option value="refunded">Refunded</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-3">
+                                <label class="form-label small fw-semibold">Sort by</label>
+                                <select id="transactionSortFilter" class="form-select rounded-pill bg-light border-0">
+                                    <option value="newest">Newest first</option>
+                                    <option value="oldest">Oldest first</option>
+                                    <option value="highest">Highest amount</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-12">
+                                <button type="button" class="btn btn-dark rounded-pill w-100" onclick="resetTransactionFilters()"><i class="fa-solid fa-filter-circle-xmark me-2"></i> Reset</button>
+                            </div>
+                        </div>
+                        <div class="transaction-preview-note mt-3 p-3 rounded-4 small text-muted">
+                            Demo preview data is shown when live transaction records are unavailable, so the dashboard always looks realistic for testing.
+                        </div>
+                    </div>
+                    <div id="transactionCardGrid" class="transaction-card-grid"></div>
+                    <div class="table-responsive transaction-table-wrap">
+                        <table class="table table-custom border rounded-4 overflow-hidden mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Transaction</th>
+                                    <th>Property</th>
+                                    <th>Buyer / Seller</th>
+                                    <th>Method</th>
+                                    <th>Amount</th>
+                                    <th>Commission</th>
+                                    <th>Seller Payout</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPaymentsTableBody">
+                                <tr><td colspan="9" class="text-center text-muted py-4">Loading transactions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. Settings -->
+            <div id="settings" class="tab-section">
+                <h3 class="fw-bold mb-4">Platform Settings</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card-panel mb-4">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Measurement Standards</h5>
+                            <p class="text-muted small">The platform strictly uses Marla. Define the internal conversion standard for calculations.</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">1 Marla equals (Square Feet) *</label>
+                                <input type="number" class="form-control rounded-pill bg-light border-0" value="272.25" disabled>
+                                <small class="text-muted d-block mt-1">Locked globally for consistency.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-panel">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">General Configuration</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">Primary Currency</label>
+                                <select id="platformCurrency" class="form-select rounded-pill bg-light border-0">
+                                    <option>PKR (Pakistani Rupee)</option>
+                                    <option>USD (US Dollar)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-check form-switch fs-5 mb-2 mt-4">
+                                <input class="form-check-input shadow-none" type="checkbox" checked id="reqApp">
+                                <label class="form-check-label ms-2 h6 mb-0 mt-1" for="reqApp">Require Approval for New Properties</label>
+                            </div>
+                            <div class="form-check form-switch fs-5 mb-2">
+                                <input class="form-check-input shadow-none" type="checkbox" checked id="enSignup">
+                                <label class="form-check-label ms-2 h6 mb-0 mt-1" for="enSignup">Enable User Signups</label>
+                            </div>
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input shadow-none" type="checkbox" checked id="enNotif">
+                                <label class="form-check-label ms-2 h6 mb-0 mt-1" for="enNotif">Enable System Notifications</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card-panel">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Security & Access</h5>
+                            <button class="btn btn-outline-dark w-100 rounded-pill mb-3 text-start px-4" onclick="showAdminActivityLogs()"><i class="fa-solid fa-list-check me-2"></i> View Admin Activity Logs</button>
+                            <button class="btn btn-outline-primary w-100 rounded-pill mb-3 text-start px-4" onclick="manageAdminRoles()"><i class="fa-solid fa-shield me-2"></i> Manage Admin Roles</button>
+                            <button class="btn btn-outline-danger w-100 rounded-pill text-start px-4" onclick="forcePasswordResetForAllUsers()"><i class="fa-solid fa-key me-2"></i> Force Password Reset for All Users</button>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow mt-4" onclick="saveSettings(this)">Save All Changes</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Message Detail Modal -->
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Inquiry Details</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        <div id="modalSenderInitials" class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 50px; height: 50px;">
+                            JS
+                        </div>
+                        <div>
+                            <h6 id="modalSenderName" class="fw-bold mb-0">...</h6>
+                            <small id="modalSenderEmail" class="text-muted">...</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase mb-2">Subject Property</label>
+                        <div id="modalProperty" class="bg-light p-3 rounded-3 fw-medium">...</div>
+                    </div>
+
+                    <div class="mb-4 d-none" id="modalPropertyImageWrap">
+                        <label class="text-muted small fw-bold text-uppercase mb-2">Property Image</label>
+                        <img id="modalPropertyImage" class="img-fluid rounded-3 border" alt="Property image" style="width: 100%; max-height: 260px; object-fit: cover;">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase mb-2">Message</label>
+                        <div id="modalMessage" class="bg-white border p-3 rounded-3" style="white-space: pre-wrap;">...</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Received on: <span id="modalDate">...</span></span>
+                        <span>ID: #MSG-<span id="modalId">...</span></span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete User Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Confirm Deletion</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <p class="mb-2">You are about to delete <span id="deleteUserName" class="fw-bold">this user</span>.</p>
+                            <p class="text-muted small mb-0">This action cannot be undone and will permanently remove the user.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn">Delete User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Reset User Password</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted">Set a new password for <span id="resetUserName" class="fw-bold">this user</span>.</p>
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="resetPasswordInput" placeholder="At least 8 characters">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="resetPasswordConfirm" placeholder="Re-enter new password">
+                    </div>
+                    <small class="text-muted d-block mt-2">The user will be required to sign in with the new password.</small>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="resetPasswordBtn">Reset Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="adminToastContainer" class="toast-container position-fixed top-0 end-0 p-3 admin-toast-container"></div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Initial render
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Robust Auth Guard
+            try {
+                const res = await API.validateAdmin();
+                if (!res) return;
+                const user = res && res.user ? res.user : null;
+                const role = (user && user.role ? user.role : localStorage.getItem('role') || '').toLowerCase();
+                if (!user || role !== 'admin') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (user.name) localStorage.setItem('name', user.name);
+                if (user.role) localStorage.setItem('role', user.role);
+            } catch (e) {
+                window.location.href = 'index.html';
+                return;
+            } finally {
+                document.documentElement.classList.remove('auth-pending');
+            }
+
+            await loadDashboardStats();
+            
+            // Check for new messages count
+            try {
+                const msgRes = await API.getAdminMessages();
+                const count = (msgRes.data || []).filter(msg => !msg.is_read).length;
+                const badge = document.getElementById('inquiryBadge');
+                if (badge) {
+                    badge.innerText = count;
+                    badge.classList.toggle('d-none', count === 0);
+                }
+            } catch(e) {}
+            
+            // Check for notifications count
+            try {
+                const notifRes = await API.getNotifications();
+                const unreadCount = (notifRes.data || []).filter(n => !n.is_read).length;
+                const notifBadge = document.getElementById('adminTopNotificationBadge');
+                if(notifBadge) {
+                    if(unreadCount > 0) {
+                        notifBadge.innerText = unreadCount;
+                        notifBadge.style.display = 'block';
+                    } else {
+                        notifBadge.style.display = 'none';
+                    }
+                }
+            } catch(e) {}
+
+            // Activate Search
+            const searchInput = document.getElementById('adminSearchInput');
+            const searchBtn = document.getElementById('adminSearchBtn');
+            
+            if (searchBtn) {
+                searchBtn.addEventListener('click', () => {
+                    performSearch(searchInput.value.toLowerCase());
+                });
+            }
+            
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        performSearch(searchInput.value.toLowerCase());
+                    }
+                });
+            }
+
+            const reportRangeSelect = document.getElementById('reportRangeSelect');
+            if (reportRangeSelect) {
+                reportRangeSelect.addEventListener('change', () => loadAdminReportsData());
+            }
+
+            const propertyTypeFilter = document.getElementById('adminPropertyTypeFilter');
+            const propertyCityFilter = document.getElementById('adminPropertyCityFilter');
+            [propertyTypeFilter, propertyCityFilter].forEach((filter) => {
+                if (!filter || filter.dataset.bound) return;
+                filter.addEventListener('change', () => loadProperties());
+                filter.dataset.bound = '1';
+            });
+        });
+
+        async function performSearch(query) {
+            if (!query) {
+                // If empty, just refresh the current tab
+                const activeTab = document.querySelector('.tab-section.active');
+                if (activeTab) showTab(activeTab.id);
+                return;
+            }
+
+            // Global search logic: 
+            // 1. Try to find if user is in a specific tab and filter it
+            // 2. If no results or in dashboard, search all and switch to best tab or show results
+            
+            const activeTabId = document.querySelector('.tab-section.active').id;
+            
+            if (activeTabId === 'users' || activeTabId === 'properties' || activeTabId === 'inquiries') {
+                filterCurrentTable(query);
+            } else {
+                // In dashboard or other tab, let's try to search properties first as it's most common
+                showTab('properties');
+                setTimeout(() => filterCurrentTable(query), 100);
+            }
+        }
+
+        function filterCurrentTable(query) {
+            const activeTab = document.querySelector('.tab-section.active');
+            if (!activeTab) return;
+
+            const rows = activeTab.querySelectorAll('tbody tr');
+            let hasResults = false;
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const tbody = activeTab.querySelector('tbody');
+            let noResultMsg = activeTab.querySelector('.no-results-msg');
+            
+            if (!hasResults && query !== '') {
+                if (!noResultMsg) {
+                    noResultMsg = document.createElement('tr');
+                    noResultMsg.className = 'no-results-msg';
+                    noResultMsg.innerHTML = `<td colspan="10" class="text-center p-5 text-muted">No results found for "${query}"</td>`;
+                    tbody.appendChild(noResultMsg);
+                }
+            } else if (noResultMsg) {
+                noResultMsg.remove();
+            }
+        }
+
+        // Functional Actions for Static Tabs
+        const adminState = {
+            cms: {},
+            settings: {},
+            reports: null
+        };
+
+        async function loadAdminNotificationsPanel() {
+            const list = document.getElementById('broadcastList');
+            if (!list) return;
+            try {
+                const res = await API.getAdminNotifications();
+                const broadcasts = res.data || [];
+                if (!broadcasts.length) {
+                    list.innerHTML = '<li class="list-group-item border-0 px-0 text-muted">No broadcasts have been sent yet.</li>';
+                    return;
+                }
+                list.innerHTML = broadcasts.map(item => `
+                    <li class="list-group-item px-0 py-3 d-flex justify-content-between align-items-start border-0 border-top">
+                        <div class="me-3">
+                            <h6 class="fw-bold mb-1">${item.title}</h6>
+                            <span class="badge bg-light text-dark border">${(item.type || 'info').toUpperCase()}</span>
+                            <div class="text-muted small mt-2">${item.message}</div>
+                        </div>
+                        <small class="text-muted flex-shrink-0">${formatAdminDate(item.created_at)}</small>
+                    </li>
+                `).join('');
+            } catch (err) {
+                list.innerHTML = '<li class="list-group-item border-0 px-0 text-danger">Failed to load broadcasts.</li>';
+            }
+        }
+
+        async function loadAdminCMSContent() {
+            try {
+                const res = await API.getAdminCMS();
+                adminState.cms = res.data || {};
+                const titleInput = document.getElementById('cmsBannerTitle');
+                const subtitleInput = document.getElementById('cmsBannerSubtitle');
+                const imageInput = document.getElementById('cmsBannerImageUrl');
+                const bannerImage = document.getElementById('cmsBannerImage');
+                if (titleInput) titleInput.value = adminState.cms.homepage_banner_title || titleInput.value;
+                if (subtitleInput) subtitleInput.value = adminState.cms.homepage_banner_subtitle || subtitleInput.value;
+                if (imageInput) imageInput.value = adminState.cms.homepage_banner_image || imageInput.value;
+                if (bannerImage && adminState.cms.homepage_banner_image) bannerImage.src = adminState.cms.homepage_banner_image;
+            } catch (err) {
+                console.warn('Failed to load CMS content', err);
+            }
+        }
+
+        async function loadAdminSettingsContent() {
+            try {
+                const res = await API.getAdminSettings();
+                adminState.settings = res.data || {};
+                const currency = document.getElementById('platformCurrency');
+                const reqApp = document.getElementById('reqApp');
+                const enSignup = document.getElementById('enSignup');
+                const enNotif = document.getElementById('enNotif');
+                if (currency) currency.value = adminState.settings.currency === 'USD' ? 'USD (US Dollar)' : 'PKR (Pakistani Rupee)';
+                if (reqApp) reqApp.checked = adminState.settings.require_property_approval !== '0';
+                if (enSignup) enSignup.checked = adminState.settings.enable_user_signups !== '0';
+                if (enNotif) enNotif.checked = adminState.settings.enable_system_notifications !== '0';
+            } catch (err) {
+                console.warn('Failed to load settings', err);
+            }
+        }
+
+        async function loadAdminReportsData() {
+            const body = document.getElementById('reportTableBody');
+            if (!body) return;
+            const days = document.getElementById('reportRangeSelect')?.value || '30';
+            try {
+                const res = await API.getAdminReports(Number(days));
+                adminState.reports = res;
+                const rows = res.daily_activity || [];
+                if (!rows.length) {
+                    body.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No report data available yet.</td></tr>';
+                    return;
+                }
+                body.innerHTML = rows.map(row => `
+                    <tr>
+                        <td>${formatReportDate(row.day)}</td>
+                        <td>${row.new_users || 0}</td>
+                        <td>${row.property_uploads || 0}</td>
+                        <td>${row.ai_uses || 0}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                body.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Failed to load reports.</td></tr>';
+            }
+        }
+
+        function getPaymentBadgeClass(status) {
+            const normalized = (status || 'pending').toLowerCase();
+            if (normalized === 'paid') return 'badge-success';
+            if (normalized === 'failed') return 'badge-danger';
+            if (normalized === 'refunded') return 'badge-warning';
+            return 'badge-info';
+        }
+
+        function formatMoney(value) {
+            const number = Number(value || 0);
+            return `PKR ${number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        const adminDemoTransactions = [
+            {
+                transaction_id: 'TRX-2026-0412-A31F',
+                gateway_reference: 'GW-8F1A2B3C4D',
+                buyer_name: 'Ayesha Khan',
+                buyer_email: 'ayesha.khan@example.com',
+                seller_name: 'Muhammad Aslam',
+                seller_email: 'aslam.agent@example.com',
+                property_title: 'Crescent Heights Villa',
+                property_location: 'DHA Phase 6, Lahore',
+                property_type: 'house',
+                payment_method: 'bank_transfer',
+                amount: 18500000,
+                commission_amount: 1850000,
+                owner_amount: 16650000,
+                payment_status: 'paid',
+                created_at: '2026-05-12T14:24:00'
+            },
+            {
+                transaction_id: 'TRX-2026-0418-B74K',
+                gateway_reference: 'GW-1C9D7E5F00',
+                buyer_name: 'Hassan Raza',
+                buyer_email: 'hassan.raza@example.com',
+                seller_name: 'Nadia Malik',
+                seller_email: 'nadia.malik@example.com',
+                property_title: 'Palm Residency Apartment',
+                property_location: 'Bahria Town, Karachi',
+                property_type: 'apartment',
+                payment_method: 'card',
+                amount: 9200000,
+                commission_amount: 920000,
+                owner_amount: 8280000,
+                payment_status: 'pending',
+                created_at: '2026-05-18T09:12:00'
+            },
+            {
+                transaction_id: 'TRX-2026-0421-C52N',
+                gateway_reference: 'GW-2A7D8C6B19',
+                buyer_name: 'Sara Ahmed',
+                buyer_email: 'sara.ahmed@example.com',
+                seller_name: 'Imran Siddiqui',
+                seller_email: 'imran.siddiqui@example.com',
+                property_title: 'Sunrise Smart Home',
+                property_location: 'Gulberg, Islamabad',
+                property_type: 'house',
+                payment_method: 'jazzcash',
+                amount: 14250000,
+                commission_amount: 1425000,
+                owner_amount: 12825000,
+                payment_status: 'failed',
+                created_at: '2026-05-18T18:45:00'
+            },
+            {
+                transaction_id: 'TRX-2026-0423-D11P',
+                gateway_reference: 'GW-0E4F6A7D88',
+                buyer_name: 'Bilal Javed',
+                buyer_email: 'bilal.javed@example.com',
+                seller_name: 'Fatima Noor',
+                seller_email: 'fatima.noor@example.com',
+                property_title: 'Marina Crest Residence',
+                property_location: 'Clifton, Karachi',
+                property_type: 'apartment',
+                payment_method: 'easypaisa',
+                amount: 26500000,
+                commission_amount: 2650000,
+                owner_amount: 23850000,
+                payment_status: 'paid',
+                created_at: '2026-05-19T10:38:00'
+            },
+            {
+                transaction_id: 'TRX-2026-0424-E89Q',
+                gateway_reference: 'GW-5B2C3D4E91',
+                buyer_name: 'Zainab Ali',
+                buyer_email: 'zainab.ali@example.com',
+                seller_name: 'Omar Farooq',
+                seller_email: 'omar.farooq@example.com',
+                property_title: 'Garden View Plot',
+                property_location: 'Lake City, Lahore',
+                property_type: 'plot',
+                payment_method: 'wallet',
+                amount: 6800000,
+                commission_amount: 680000,
+                owner_amount: 6120000,
+                payment_status: 'paid',
+                created_at: '2026-05-19T13:50:00'
+            }
+        ];
+
+        const adminTransactionState = {
+            payments: [],
+            filtered: []
+        };
+
+        function normalizeTransactionStatus(status) {
+            const normalized = (status || 'pending').toLowerCase();
+            if (normalized === 'paid') return 'Completed';
+            if (normalized === 'failed') return 'Failed';
+            if (normalized === 'refunded') return 'Refunded';
+            return 'Pending';
+        }
+
+        function getTransactionStatusPillClass(status) {
+            const normalized = (status || 'pending').toLowerCase();
+            if (normalized === 'paid') return 'bg-success text-success';
+            if (normalized === 'failed') return 'bg-danger text-danger';
+            if (normalized === 'refunded') return 'bg-warning text-warning';
+            return 'bg-info text-info';
+        }
+
+        function getTransactionDataset() {
+            return adminTransactionState.payments.length ? adminTransactionState.payments : adminDemoTransactions;
+        }
+
+        function filterTransactions(payments) {
+            const search = document.getElementById('transactionSearchInput')?.value.trim().toLowerCase() || '';
+            const status = document.getElementById('transactionStatusFilter')?.value || 'all';
+            const sort = document.getElementById('transactionSortFilter')?.value || 'newest';
+            const rows = Array.isArray(payments) ? [...payments] : [];
+
+            const filtered = rows.filter(payment => {
+                const normalizedStatus = (payment.payment_status || 'pending').toLowerCase();
+                const matchesStatus = status === 'all' || normalizedStatus === status;
+                const haystack = [
+                    payment.buyer_name,
+                    payment.property_title,
+                    payment.transaction_id,
+                    payment.payment_method,
+                    payment.gateway_reference,
+                    payment.property_location,
+                    payment.seller_name
+                ].filter(Boolean).join(' ').toLowerCase();
+                return matchesStatus && (!search || haystack.includes(search));
+            });
+
+            filtered.sort((a, b) => {
+                const aTime = new Date(a.created_at || a.status_updated_at || 0).getTime();
+                const bTime = new Date(b.created_at || b.status_updated_at || 0).getTime();
+                if (sort === 'oldest') return aTime - bTime;
+                if (sort === 'highest') return Number(b.amount || 0) - Number(a.amount || 0);
+                return bTime - aTime;
+            });
+
+            adminTransactionState.filtered = filtered;
+            return filtered;
+        }
+
+        function renderTransactionCards(payments) {
+            const container = document.getElementById('transactionCardGrid');
+            if (!container) return;
+            const rows = Array.isArray(payments) ? payments : [];
+            if (!rows.length) {
+                container.innerHTML = '<div class="col-12"><div class="card-panel text-center text-muted py-5">No matching transactions found.</div></div>';
+                return;
+            }
+            container.innerHTML = rows.slice(0, 5).map(payment => `
+                <article class="transaction-card">
+                    <div class="card-top">
+                        <div>
+                            <p class="text-muted small mb-1">${payment.transaction_id || 'N/A'}</p>
+                            <h6 class="fw-bold mb-1">${payment.property_title || `Property #${payment.property_id || 'N/A'}`}</h6>
+                            <p class="text-muted small mb-0">${payment.property_location || 'N/A'}</p>
+                        </div>
+                        <span class="badge-status ${getPaymentBadgeClass(payment.payment_status)} text-capitalize">${normalizeTransactionStatus(payment.payment_status)}</span>
+                    </div>
+                    <div class="fw-semibold mb-2">Buyer: ${payment.buyer_name || 'Buyer'}</div>
+                    <div class="text-muted small mb-2">${payment.buyer_email || 'No buyer email'}</div>
+                    <div class="amount-line"><span>Total Amount</span><strong>${formatMoney(payment.amount)}</strong></div>
+                    <div class="amount-line"><span>Admin Commission</span><strong class="text-warning">${formatMoney(payment.commission_amount || Number(payment.amount || 0) * 0.1)}</strong></div>
+                    <div class="amount-line"><span>Seller Amount</span><strong class="text-success">${formatMoney(payment.owner_amount || Number(payment.amount || 0) * 0.9)}</strong></div>
+                    <div class="card-meta">
+                        <span><i class="fa-solid fa-credit-card me-1"></i>${(payment.payment_method || 'card').replace(/_/g, ' ')}</span>
+                        <span><i class="fa-solid fa-calendar-day me-1"></i>${formatAdminDate(payment.created_at)}</span>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function renderTransactionTable(payments) {
+            const body = document.getElementById('adminPaymentsTableBody');
+            if (!body) return;
+            const rows = Array.isArray(payments) ? payments : [];
+            if (!rows.length) {
+                body.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">No matching transactions found.</td></tr>';
+                return;
+            }
+            body.innerHTML = rows.map(payment => `
+                <tr>
+                    <td>
+                        <div class="fw-semibold">${payment.transaction_id || 'N/A'}</div>
+                        <div class="text-muted small">Ref: ${payment.gateway_reference || 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">${payment.property_title || `Property #${payment.property_id}`}</div>
+                        <div class="text-muted small">${payment.property_location || ''}</div>
+                        <div class="text-muted small text-capitalize">${payment.property_type || ''}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">${payment.buyer_name || 'Buyer'}</div>
+                        <div class="text-muted small">${payment.buyer_email || 'No buyer email'}</div>
+                        <div class="text-muted small">Seller: ${payment.seller_name || 'Owner'}</div>
+                        <div class="text-muted small">${payment.seller_email || 'No seller email'}</div>
+                    </td>
+                    <td class="text-capitalize">${(payment.payment_method || 'card').replace(/_/g, ' ')}</td>
+                    <td class="fw-semibold text-primary">${formatMoney(payment.amount)}</td>
+                    <td class="text-warning fw-semibold">${formatMoney(payment.commission_amount || (Number(payment.amount || 0) * 0.1))}</td>
+                    <td class="text-success fw-semibold">${formatMoney(payment.owner_amount || (Number(payment.amount || 0) * 0.9))}</td>
+                    <td><span class="badge-status ${getPaymentBadgeClass(payment.payment_status)} text-capitalize">${normalizeTransactionStatus(payment.payment_status)}</span></td>
+                    <td class="text-muted small">${formatAdminDate(payment.created_at)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function applyTransactionFilters() {
+            const filtered = filterTransactions(getTransactionDataset());
+            renderTransactionAnalytics(filtered);
+            renderTransactionCards(filtered);
+            renderTransactionTable(filtered);
+        }
+
+        function resetTransactionFilters() {
+            const search = document.getElementById('transactionSearchInput');
+            const status = document.getElementById('transactionStatusFilter');
+            const sort = document.getElementById('transactionSortFilter');
+            if (search) search.value = '';
+            if (status) status.value = 'all';
+            if (sort) sort.value = 'newest';
+            applyTransactionFilters();
+        }
+
+        function renderTransactionAnalytics(payments) {
+            const rows = Array.isArray(payments) ? payments : [];
+            const completedRows = rows.filter(payment => (payment.payment_status || 'pending').toLowerCase() === 'paid');
+            const pendingRows = rows.filter(payment => (payment.payment_status || 'pending').toLowerCase() === 'pending');
+            const failedRows = rows.filter(payment => (payment.payment_status || 'pending').toLowerCase() === 'failed');
+            const refundedRows = rows.filter(payment => (payment.payment_status || 'pending').toLowerCase() === 'refunded');
+            const totalRevenue = completedRows.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+            const totalCommission = completedRows.reduce((sum, payment) => sum + Number(payment.commission_amount || (Number(payment.amount || 0) * 0.1)), 0);
+            const totalPayout = completedRows.reduce((sum, payment) => sum + Number(payment.owner_amount || (Number(payment.amount || 0) * 0.9)), 0);
+
+            const methodCounts = rows.reduce((acc, payment) => {
+                const method = (payment.payment_method || 'card').replace(/_/g, ' ');
+                acc[method] = (acc[method] || 0) + 1;
+                return acc;
+            }, {});
+            const methodSummary = Object.entries(methodCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([method, count]) => `${method.toUpperCase()}: ${count}`)
+                .join(' | ');
+
+            const totalCount = document.getElementById('transactionTotalCount');
+            const statusSummary = document.getElementById('transactionStatusSummary');
+            const revenue = document.getElementById('transactionRevenue');
+            const commission = document.getElementById('transactionCommission');
+            const payout = document.getElementById('transactionPayout');
+            const completedCount = document.getElementById('transactionCompletedCount');
+            const pendingCount = document.getElementById('transactionPendingCount');
+            const failedCount = document.getElementById('transactionFailedCount');
+            const methodSummaryNode = document.getElementById('transactionMethodSummary');
+
+            if (totalCount) totalCount.innerText = rows.length.toLocaleString();
+            if (statusSummary) statusSummary.innerText = `Completed: ${completedRows.length} | Pending: ${pendingRows.length} | Refunded: ${refundedRows.length}`;
+            if (revenue) revenue.innerText = formatMoney(totalRevenue);
+            if (commission) commission.innerText = formatMoney(totalCommission);
+            if (payout) payout.innerText = formatMoney(totalPayout);
+            if (completedCount) completedCount.innerText = completedRows.length.toLocaleString();
+            if (pendingCount) pendingCount.innerText = pendingRows.length.toLocaleString();
+            if (failedCount) failedCount.innerText = failedRows.length.toLocaleString();
+            if (methodSummaryNode) {
+                methodSummaryNode.innerText = methodSummary ? `Payment mix: ${methodSummary}` : 'No transaction analytics available yet.';
+            }
+
+            renderTransactionCharts(rows);
+        }
+
+        function renderTransactionCharts(payments) {
+            const rows = Array.isArray(payments) ? payments : [];
+            const paidRows = rows.filter(payment => (payment.payment_status || 'pending').toLowerCase() === 'paid');
+            const monthlyMap = {};
+            const propertySalesMap = {};
+
+            paidRows.forEach(payment => {
+                const date = new Date(payment.created_at || payment.status_updated_at || Date.now());
+                const monthKey = date.toLocaleString(undefined, { month: 'short', year: 'numeric' });
+                monthlyMap[monthKey] = (monthlyMap[monthKey] || 0) + Number(payment.amount || 0);
+                const propertyKey = (payment.property_type || 'property').replace(/_/g, ' ');
+                propertySalesMap[propertyKey] = (propertySalesMap[propertyKey] || 0) + 1;
+            });
+
+            const monthLabels = Object.keys(monthlyMap);
+            const monthValues = Object.values(monthlyMap);
+            const propertyLabels = Object.keys(propertySalesMap);
+            const propertyValues = Object.values(propertySalesMap);
+
+            const monthlyCanvas = document.getElementById('monthlyEarningsChart');
+            const propertyCanvas = document.getElementById('propertySalesChart');
+
+            if (window.transactionRevenueChart) {
+                window.transactionRevenueChart.destroy();
+                window.transactionRevenueChart = null;
+            }
+            if (window.transactionPropertyChart) {
+                window.transactionPropertyChart.destroy();
+                window.transactionPropertyChart = null;
+            }
+
+            if (monthlyCanvas) {
+                window.transactionRevenueChart = new Chart(monthlyCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: monthLabels.length ? monthLabels : ['No data'],
+                        datasets: [{
+                            label: 'Revenue',
+                            data: monthValues.length ? monthValues : [0],
+                            borderColor: '#4F46E5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#4F46E5'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(148, 163, 184, 0.18)' },
+                                ticks: { callback: value => `PKR ${Number(value).toLocaleString()}` }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            if (propertyCanvas) {
+                window.transactionPropertyChart = new Chart(propertyCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: propertyLabels.length ? propertyLabels : ['No sales'],
+                        datasets: [{
+                            data: propertyValues.length ? propertyValues : [0],
+                            backgroundColor: ['#4F46E5', '#10B981', '#F59E0B', '#F43F5E', '#38BDF8'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadAdminPaymentsData() {
+            const body = document.getElementById('adminPaymentsTableBody');
+            if (!body) return;
+            body.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Loading transactions...</td></tr>';
+            try {
+                const res = await API.getAdminPayments(100);
+                const payments = (res.data && res.data.length) ? res.data : adminDemoTransactions;
+                adminTransactionState.payments = payments;
+                const searchInput = document.getElementById('transactionSearchInput');
+                const statusFilter = document.getElementById('transactionStatusFilter');
+                const sortFilter = document.getElementById('transactionSortFilter');
+                if (searchInput && !searchInput.dataset.bound) {
+                    searchInput.addEventListener('input', applyTransactionFilters);
+                    searchInput.dataset.bound = '1';
+                }
+                if (statusFilter && !statusFilter.dataset.bound) {
+                    statusFilter.addEventListener('change', applyTransactionFilters);
+                    statusFilter.dataset.bound = '1';
+                }
+                if (sortFilter && !sortFilter.dataset.bound) {
+                    sortFilter.addEventListener('change', applyTransactionFilters);
+                    sortFilter.dataset.bound = '1';
+                }
+                applyTransactionFilters();
+            } catch (err) {
+                adminTransactionState.payments = adminDemoTransactions;
+                applyTransactionFilters();
+                showToast('warning', 'Live transaction records are unavailable. Showing demo preview data.');
+            }
+        }
+
+        async function loadPendingApprovals() {
+            const container = document.getElementById('approvalsContainer');
+            const approvalBadge = document.getElementById('approvalBadge');
+            if (!container) return;
+            container.innerHTML = '<div class="col-12 text-center py-5 text-muted"><div class="spinner-border text-primary mb-3"></div><p>Loading pending approvals...</p></div>';
+            try {
+                const res = await API.getProperties({ status: 'pending' });
+                const props = res.data || [];
+                if (approvalBadge) {
+                    const count = props.length;
+                    approvalBadge.textContent = count.toString();
+                    approvalBadge.classList.toggle('d-none', count === 0);
+                }
+                if (!props.length) {
+                    container.innerHTML = '<div class="col-12"><div class="card-panel text-center py-5 text-muted">No properties are waiting for approval.</div></div>';
+                    return;
+                }
+                container.innerHTML = props.map(p => `
+                    <div class="col-md-6">
+                        <div class="card-panel h-100" data-property-id="${p.id}">
+                            <span class="badge bg-danger mb-3">Pending Review</span>
+                            <img src="${p.image_url || 'https://via.placeholder.com/600x400'}" class="img-fluid rounded-3 mb-3" style="height: 200px; width: 100%; object-fit: cover;">
+                            <h5 class="fw-bold">${p.title}</h5>
+                            <p class="text-muted small mb-2"><i class="fa-solid fa-location-dot me-1"></i> ${p.location || 'N/A'}</p>
+                            <div class="d-flex justify-content-between mb-4 pb-3 border-bottom">
+                                <span class="fw-bold text-primary">PKR ${Number(p.price || 0).toLocaleString()}</span>
+                                <span class="fw-semibold"><i class="fa-solid fa-vector-square text-muted me-1"></i> ${p.area || 0} Marla</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success flex-grow-1 rounded-pill fw-bold" onclick="approveProperty(this)"><i class="fa-solid fa-check me-2"></i> Approve</button>
+                                <button class="btn btn-outline-danger flex-grow-1 rounded-pill fw-bold" onclick="rejectProperty(this)"><i class="fa-solid fa-times me-2"></i> Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                if (approvalBadge) {
+                    approvalBadge.textContent = '0';
+                    approvalBadge.classList.add('d-none');
+                }
+                container.innerHTML = '<div class="col-12 text-center text-danger py-5">Failed to load pending approvals.</div>';
+            }
+        }
+
+        async function approveProperty(btn) {
+            const card = btn.closest('[data-property-id]');
+            const propertyId = card?.getAttribute('data-property-id');
+            if (!propertyId) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Approving...';
+            try {
+                await API.updatePropertyStatus(propertyId, 'active');
+                showToast('success', 'Property approved and published.');
+                loadPendingApprovals();
+                loadDashboardStats();
+            } catch (err) {
+                showToast('error', err.message || 'Failed to approve property.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Approve';
+            }
+        }
+
+        async function rejectProperty(btn) {
+            const card = btn.closest('[data-property-id]');
+            const propertyId = card?.getAttribute('data-property-id');
+            if (!propertyId) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Rejecting...';
+            try {
+                await API.updatePropertyStatus(propertyId, 'rejected');
+                showToast('success', 'Property rejected and owner notified.');
+                loadPendingApprovals();
+                loadDashboardStats();
+            } catch (err) {
+                showToast('error', err.message || 'Failed to reject property.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-times me-2"></i> Reject';
+            }
+        }
+
+        async function triggerRetraining(btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Retraining AI...';
+            const progressBar = document.querySelector('#ai-prediction .progress-bar');
+            if(progressBar) {
+                progressBar.style.width = '15%';
+            }
+            try {
+                await API.retrainAI();
+                if(progressBar) {
+                    progressBar.style.width = '100%';
+                }
+                btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Retraining Complete';
+                showToast('success', 'AI model retrained successfully.');
+            } catch (err) {
+                showToast('error', err.message || 'AI retraining failed.');
+                if(progressBar) progressBar.style.width = '0%';
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-rotate me-2"></i> Trigger Retraining';
+                }, 1800);
+            }
+        }
+
+        async function sendBroadcastNotification(btn) {
+            const title = document.getElementById('broadcastTitle')?.value.trim();
+            const message = document.getElementById('broadcastMessage')?.value.trim();
+            const audience = document.getElementById('broadcastAudience')?.value || 'all_users';
+            if(!title || !message) {
+                showToast('warning', 'Please enter both a title and a message.');
+                return;
+            }
+
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending...';
+            try {
+                await API.sendAdminBroadcastNotification({ title, message, audience, type: 'info' });
+                showToast('success', 'Broadcast notification sent successfully.');
+                document.getElementById('broadcastTitle').value = '';
+                document.getElementById('broadcastMessage').value = '';
+                await loadAdminNotificationsPanel();
+            } catch (err) {
+                showToast('error', err.message || 'Failed to send notification.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function updateCMSBanner(btn) {
+            const homepage_banner_title = document.getElementById('cmsBannerTitle')?.value.trim();
+            const homepage_banner_subtitle = document.getElementById('cmsBannerSubtitle')?.value.trim();
+            const homepage_banner_image = document.getElementById('cmsBannerImageUrl')?.value.trim();
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Updating...';
+            try {
+                await API.updateAdminCMS({ homepage_banner_title, homepage_banner_subtitle, homepage_banner_image });
+                if (document.getElementById('cmsBannerImage') && homepage_banner_image) {
+                    document.getElementById('cmsBannerImage').src = homepage_banner_image;
+                }
+                showToast('success', 'Homepage banner updated successfully.');
+                await loadAdminCMSContent();
+            } catch (err) {
+                showToast('error', err.message || 'Failed to update banner.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function editStaticPage(key, label) {
+            const currentValue = adminState.cms[key] || '';
+            const nextValue = window.prompt(`Update ${label} content`, currentValue);
+            if (nextValue === null) return;
+            try {
+                await API.updateAdminCMS({ [key]: nextValue });
+                adminState.cms[key] = nextValue;
+                showToast('success', `${label} updated.`);
+            } catch (err) {
+                showToast('error', err.message || `Failed to update ${label}.`);
+            }
+        }
+
+        async function exportReport(type) {
+            const range = Number(document.getElementById('reportRangeSelect')?.value || 30);
+            const format = type.toLowerCase() === 'pdf' ? 'pdf' : 'csv';
+            try {
+                const result = await API.exportAdminReport(format, range);
+                if (format === 'pdf' && result.html) {
+                    const reportWindow = window.open('', '_blank');
+                    if (reportWindow) {
+                        reportWindow.document.open();
+                        reportWindow.document.write(result.html);
+                        reportWindow.document.close();
+                    }
+                } else if (result.blob) {
+                    const downloadUrl = URL.createObjectURL(result.blob);
+                    const anchor = document.createElement('a');
+                    anchor.href = downloadUrl;
+                    anchor.download = `luxeestate_admin_report_${range}d.csv`;
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    anchor.remove();
+                    URL.revokeObjectURL(downloadUrl);
+                }
+                showToast('success', `${type} report generated.`);
+            } catch (err) {
+                showToast('error', err.message || 'Failed to export report.');
+            }
+        }
+
+        async function saveSettings(btn) {
+            const currencyValue = document.getElementById('platformCurrency')?.value || 'PKR (Pakistani Rupee)';
+            const payload = {
+                currency: currencyValue.startsWith('USD') ? 'USD' : 'PKR',
+                require_property_approval: document.getElementById('reqApp')?.checked ? '1' : '0',
+                enable_user_signups: document.getElementById('enSignup')?.checked ? '1' : '0',
+                enable_system_notifications: document.getElementById('enNotif')?.checked ? '1' : '0'
+            };
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving Changes...';
+            try {
+                await API.updateAdminSettings(payload);
+                showToast('success', 'Platform settings saved successfully.');
+                adminState.settings = payload;
+            } catch (err) {
+                showToast('error', err.message || 'Failed to save settings.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function showAdminActivityLogs() {
+            let modal = document.getElementById('adminLogsModal');
+            if (!modal) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div class="modal fade" id="adminLogsModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content border-0 rounded-4 shadow-lg">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="fw-bold mb-0">Admin Activity Logs</h5>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <div id="adminLogsBody" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                modal = document.getElementById('adminLogsModal');
+            }
+            const body = document.getElementById('adminLogsBody');
+            body.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></div>';
+            try {
+                const res = await API.getAdminActivityLogs();
+                const logs = res.data || [];
+                body.innerHTML = logs.length ? `
+                    <table class="table table-sm align-middle">
+                        <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Details</th></tr></thead>
+                        <tbody>
+                            ${logs.map(log => `
+                                <tr>
+                                    <td class="text-muted small">${formatAdminDate(log.created_at)}</td>
+                                    <td>${log.admin_name || 'System Admin'}</td>
+                                    <td><span class="badge bg-light text-dark border">${log.action}</span></td>
+                                    <td>${log.details || ''}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="text-center py-5 text-muted">No activity logs yet.</div>';
+                new bootstrap.Modal(modal).show();
+            } catch (err) {
+                body.innerHTML = '<div class="text-danger">Failed to load activity logs.</div>';
+                new bootstrap.Modal(modal).show();
+            }
+        }
+
+        async function manageAdminRoles() {
+            let modal = document.getElementById('adminRolesModal');
+            if (!modal) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div class="modal fade" id="adminRolesModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content border-0 rounded-4 shadow-lg">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="fw-bold mb-0">Manage Admin Roles</h5>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <div id="adminRolesBody" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                modal = document.getElementById('adminRolesModal');
+            }
+            const body = document.getElementById('adminRolesBody');
+            body.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></div>';
+            try {
+                const res = await API.getAdminUsers();
+                const users = (res.data || []).filter(u => (u.role || '').toLowerCase() !== 'admin' || u.id !== Number(localStorage.getItem('user_id')));
+                body.innerHTML = users.length ? `
+                    <table class="table table-sm align-middle">
+                        <thead><tr><th>User</th><th>Email</th><th>Role</th><th class="text-end">Action</th></tr></thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>${user.name}</td>
+                                    <td>${user.email}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm" id="roleSelect-${user.id}">
+                                            <option value="User" ${((user.role || '') === 'User') ? 'selected' : ''}>User</option>
+                                            <option value="Admin" ${(user.role || '').toLowerCase() === 'admin' ? 'selected' : ''}>Admin</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-primary" onclick="saveUserRole(${user.id})">Save</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="text-center py-5 text-muted">No users found.</div>';
+                new bootstrap.Modal(modal).show();
+            } catch (err) {
+                body.innerHTML = '<div class="text-danger">Failed to load users.</div>';
+                new bootstrap.Modal(modal).show();
+            }
+        }
+
+        async function saveUserRole(userId) {
+            const select = document.getElementById(`roleSelect-${userId}`);
+            if (!select) return;
+            try {
+                await API.updateAdminUserRole(userId, select.value);
+                showToast('success', 'Role updated successfully.');
+                await loadDashboardStats();
+            } catch (err) {
+                showToast('error', err.message || 'Failed to update role.');
+            }
+        }
+
+        async function forcePasswordResetForAllUsers() {
+            if (!confirm('Force all non-admin users to reset their password at next login?')) return;
+            try {
+                await API.forcePasswordResetForAll();
+                showToast('success', 'Password reset requirement applied to all users.');
+            } catch (err) {
+                showToast('error', err.message || 'Failed to apply password reset requirement.');
+            }
+        }
+
+        function formatAdminDate(dateStr) {
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleString();
+        }
+
+        function formatReportDate(dateStr) {
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return dateStr || 'N/A';
+            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        async function refreshCurrentAdminTab() {
+            const activeTab = document.querySelector('.tab-section.active');
+            if (!activeTab) return;
+            if (activeTab.id === 'notifications') await loadAdminNotificationsPanel();
+            if (activeTab.id === 'cms') await loadAdminCMSContent();
+            if (activeTab.id === 'reports') await loadAdminReportsData();
+            if (activeTab.id === 'transactions') await loadAdminPaymentsData();
+            if (activeTab.id === 'settings') await loadAdminSettingsContent();
+            if (activeTab.id === 'approvals') await loadPendingApprovals();
+        }
+
+        // Tab Navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+            
+            const tab = document.getElementById(tabId);
+            if(tab) tab.classList.add('active');
+            
+            const link = document.querySelector(`.nav-link-custom[onclick*="'${tabId}'"]`);
+            if(link) link.classList.add('active');
+
+            if(tabId === 'users') loadUsers();
+            if(tabId === 'properties') loadProperties();
+            if(tabId === 'dashboard') loadDashboardStats();
+            if(tabId === 'inquiries') loadMessages();
+            if(tabId === 'approvals') loadPendingApprovals();
+            if(tabId === 'notifications') loadAdminNotificationsPanel();
+            if(tabId === 'cms') loadAdminCMSContent();
+            if(tabId === 'reports') loadAdminReportsData();
+            if(tabId === 'transactions') loadAdminPaymentsData();
+            if(tabId === 'settings') loadAdminSettingsContent();
+            
+            // Clear search when switching tabs
+            const searchInput = document.getElementById('adminSearchInput');
+            if (searchInput) searchInput.value = '';
+        }
+
+        (function initTabFromUrl() {
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab) showTab(tab);
+        })();
+
+        (function handlePropertyUpdateNotice() {
+            const updated = localStorage.getItem('propertyUpdateSuccess');
+            if (!updated) return;
+            localStorage.removeItem('propertyUpdateSuccess');
+            showTab('properties');
+            loadProperties();
+            showToast('success', 'Property updated successfully.');
+        })();
+
+        // Data Loading
+
+        async function loadMessages() {
+            const table = document.getElementById('adminMessageTable');
+            if(!table) return;
+            table.innerHTML = '<tr><td colspan="6" class="text-center p-5"><div class="spinner-border text-primary"></div></td></tr>';
+            try {
+                const res = await API.getAdminMessages();
+                const msgs = res.data || [];
+                const unreadCount = msgs.filter(msg => !msg.is_read).length;
+                const inquiryBadge = document.getElementById('inquiryBadge');
+                if (inquiryBadge) {
+                    inquiryBadge.innerText = unreadCount;
+                    inquiryBadge.classList.toggle('d-none', unreadCount === 0);
+                }
+                if (msgs.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6" class="text-center p-5 text-muted">No inquiries found.</td></tr>';
+                    return;
+                }
+                table.innerHTML = msgs.map(m => `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${m.sender_name}</div>
+                            <small class="text-muted">${m.sender_email}</small>
+                        </td>
+                        <td>
+                            <div class="small fw-semibold text-primary">${m.property_title || 'General Inquiry'}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 250px;">${m.message}</div>
+                        </td>
+                        <td><span class="badge-status badge-info">${m.receiver_name || 'Admin'}</span></td>
+                        <td class="text-muted small">${new Date(m.timestamp).toLocaleDateString()}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-light" onclick="viewMessageDetail('${m.id}')"><i class="fa-solid fa-eye"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { table.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load messages</td></tr>'; }
+        }
+
+        async function viewMessageDetail(id) {
+            try {
+                const res = await API.getAdminMessages();
+                const msgs = res.data || [];
+                const m = msgs.find(msg => msg.id == id);
+                if (!m) return;
+                if (!m.is_read) {
+                    try {
+                        await API.markAdminMessageRead(id);
+                        m.is_read = 1;
+                    } catch (err) {}
+                }
+                document.getElementById('modalSenderName').innerText = m.sender_name;
+                document.getElementById('modalSenderEmail').innerText = m.sender_email;
+                document.getElementById('modalProperty').innerText = m.property_title || 'General Inquiry';
+                document.getElementById('modalMessage').innerText = m.message;
+                document.getElementById('modalDate').innerText = new Date(m.timestamp).toLocaleString();
+                document.getElementById('modalId').innerText = m.id;
+                const initials = m.sender_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                document.getElementById('modalSenderInitials').innerText = initials;
+                const imageWrap = document.getElementById('modalPropertyImageWrap');
+                const imageEl = document.getElementById('modalPropertyImage');
+                if (imageWrap && imageEl) {
+                    const imageUrl = m.property_image || '';
+                    if (imageUrl) {
+                        imageEl.src = imageUrl;
+                        imageEl.alt = m.property_title ? `${m.property_title} image` : 'Property image';
+                        imageWrap.classList.remove('d-none');
+                    } else {
+                        imageEl.src = '';
+                        imageEl.alt = '';
+                        imageWrap.classList.add('d-none');
+                    }
+                }
+                const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+                modal.show();
+            } catch (e) { alert("Failed to load message details."); }
+        }
+
+        async function loadUsers() {
+            const table = document.getElementById('adminUserTable');
+            if (!table) return;
+            table.innerHTML = '<tr><td colspan="7" class="text-center p-5"><div class="spinner-border text-primary"></div></td></tr>';
+            try {
+                const res = await API.getAdminUsers();
+                const users = res.data || [];
+                if (!users.length) {
+                    table.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-5">No users found.</td></tr>';
+                    return;
+                }
+                table.innerHTML = users.map(u => {
+                    const isAdmin = (u.role || '').toLowerCase() === 'admin';
+                    const safeName = (u.name || '').replace(/'/g, "\\'");
+                    const status = u.status || 'active';
+                    const securityCell = isAdmin ? `
+                        <span class="badge-status badge-warning">Admin Protected</span>
+                    ` : (u.password_state === 'plain' ? `
+                        <div class="password-cell">
+                            <span class="password-pill" id="passwordText-${u.id}" data-password="${encodeURIComponent(u.password_value || '')}">******</span>
+                            <button class="btn btn-sm btn-light" onclick="togglePassword(${u.id})" title="View password"><i class="fa-regular fa-eye"></i></button>
+                        </div>
+                    ` : `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-status badge-info">Hashed</span>
+                            <button class="btn btn-sm btn-outline-primary" onclick="openResetPasswordModal(${u.id}, '${safeName}')">Reset</button>
+                        </div>
+                    `);
+                    const actionButtons = isAdmin ? `
+                        <div class="user-actions justify-content-end">
+                            <button class="btn btn-sm btn-light text-secondary" disabled title="Admin account"><i class="fa-solid fa-lock"></i></button>
+                        </div>
+                    ` : `
+                        <div class="user-actions justify-content-end">
+                            <button class="btn btn-sm btn-light text-primary" onclick="openResetPasswordModal(${u.id}, '${safeName}')" title="Reset password"><i class="fa-solid fa-key"></i></button>
+                            <button class="btn btn-sm btn-light text-danger" onclick="openDeleteUserModal(${u.id}, '${safeName}')" title="Delete user"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    return `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}" class="rounded-circle me-3" width="40" height="40">
+                                    <div><h6 class="mb-0 fw-bold">${u.name || 'User'}</h6><small class="text-muted">ID: #U00${u.id}</small></div>
+                                </div>
+                            </td>
+                            <td>${u.email || 'N/A'}</td>
+                            <td><span class="badge-status badge-primary">${u.role || 'User'}</span></td>
+                            <td><span class="badge-status badge-success">${status}</span></td>
+                            <td>${u.joined || 'N/A'}</td>
+                            <td>${securityCell}</td>
+                            <td class="text-end">${actionButtons}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                table.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load users</td></tr>';
+            }
+        }
+
+        function togglePassword(userId) {
+            const el = document.getElementById(`passwordText-${userId}`);
+            if (!el) return;
+            const raw = decodeURIComponent(el.getAttribute('data-password') || '');
+            const showing = el.getAttribute('data-show') === 'true';
+            if (showing) {
+                el.innerText = '*'.repeat(Math.max(raw.length, 6));
+                el.setAttribute('data-show', 'false');
+            } else {
+                el.innerText = raw || 'N/A';
+                el.setAttribute('data-show', 'true');
+            }
+        }
+
+        async function loadProperties() {
+            const table = document.getElementById('adminPropertyTable');
+            if (!table) return;
+            table.innerHTML = '<tr><td colspan="6" class="text-center p-5"><div class="spinner-border text-primary"></div></td></tr>';
+            const typeFilter = document.getElementById('adminPropertyTypeFilter');
+            const cityFilter = document.getElementById('adminPropertyCityFilter');
+            const filters = {};
+            const typeValue = typeFilter?.value || 'All Types';
+            const cityValue = cityFilter?.value || 'All Cities';
+            if (typeValue !== 'All Types') filters.type = typeValue;
+            if (cityValue !== 'All Cities') filters.city = cityValue;
+            try {
+                const res = await API.getProperties(filters);
+                const props = res.data || [];
+                if (!props.length) {
+                    table.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-5">No properties found.</td></tr>';
+                    return;
+                }
+                table.innerHTML = props.map(p => {
+                    const status = (p.status || 'active').toLowerCase();
+                    const statusClass = status === 'active'
+                        ? 'badge-success'
+                        : status === 'pending'
+                            ? 'badge-warning'
+                            : status === 'rejected'
+                                ? 'badge-danger'
+                                : 'badge-info';
+                    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                    const title = p.title || `Property #${p.id || ''}`.trim();
+                    const imageUrl = p.image_url || p.image || 'https://via.placeholder.com/80x60';
+                    const location = p.location || p.city || 'N/A';
+                    const size = p.area || p.size || 'N/A';
+                    const price = Number(p.price || 0).toLocaleString();
+                    const typeLabel = (p.property_type || p.type || 'property').replace(/_/g, ' ');
+                    return `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="${imageUrl}" class="rounded-3 me-3" width="56" height="42" style="object-fit: cover;" alt="${title}">
+                                    <div>
+                                        <div class="fw-semibold">${title}</div>
+                                        <div class="text-muted small text-capitalize">${typeLabel}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${location}</td>
+                            <td>${size} Marla</td>
+                            <td>PKR ${price}</td>
+                            <td><span class="badge-status ${statusClass}">${statusLabel}</span></td>
+                            <td class="text-end">
+                                <div class="user-actions justify-content-end">
+                                    <button class="btn btn-sm btn-light text-primary" onclick="editProperty(${p.id})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-sm btn-light text-danger" onclick="deleteProperty(${p.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                table.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load properties</td></tr>';
+            }
+        }
+
+        function openDeleteUserModal(id, name) {
+            const nameElem = document.getElementById('deleteUserName');
+            const btn = document.getElementById('confirmDeleteBtn');
+            if (nameElem) nameElem.innerText = name || 'this user';
+            if (btn) btn.setAttribute('data-user-id', id);
+            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+        }
+
+        function openResetPasswordModal(id, name) {
+            const nameElem = document.getElementById('resetUserName');
+            const input = document.getElementById('resetPasswordInput');
+            const confirm = document.getElementById('resetPasswordConfirm');
+            const btn = document.getElementById('resetPasswordBtn');
+            if (nameElem) nameElem.innerText = name || 'this user';
+            if (input) input.value = '';
+            if (confirm) confirm.value = '';
+            if (btn) btn.setAttribute('data-user-id', id);
+            const modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+            modal.show();
+        }
+
+        function showToast(type, message) {
+            const container = document.getElementById('adminToastContainer');
+            if (!container) return;
+            const map = { success: 'success', error: 'danger', warning: 'warning', info: 'info' };
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${map[type] || 'info'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            container.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: 3500 });
+            bsToast.show();
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+
+        document.addEventListener('click', async (event) => {
+            const deleteBtn = event.target.closest('#confirmDeleteBtn');
+            if (deleteBtn) {
+                const id = deleteBtn.getAttribute('data-user-id');
+                if (!id) return;
+                deleteBtn.disabled = true;
+                try {
+                    await API.deleteAdminUser(id);
+                    showToast('success', 'User deleted successfully.');
+                    loadUsers();
+                    loadDashboardStats();
+                    bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
+                } catch (e) {
+                    showToast('error', e.message || 'Failed to delete user.');
+                } finally {
+                    deleteBtn.disabled = false;
+                }
+            }
+
+            const resetBtn = event.target.closest('#resetPasswordBtn');
+            if (resetBtn) {
+                const id = resetBtn.getAttribute('data-user-id');
+                const pwd = document.getElementById('resetPasswordInput').value.trim();
+                const confirm = document.getElementById('resetPasswordConfirm').value.trim();
+                if (!pwd || pwd.length < 8) {
+                    showToast('warning', 'Password must be at least 8 characters.');
+                    return;
+                }
+                if (pwd !== confirm) {
+                    showToast('warning', 'Passwords do not match.');
+                    return;
+                }
+                resetBtn.disabled = true;
+                try {
+                    await API.resetAdminUserPassword(id, pwd);
+                    showToast('success', 'Password reset successfully.');
+                    bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+                } catch (e) {
+                    showToast('error', e.message || 'Failed to reset password.');
+                } finally {
+                    resetBtn.disabled = false;
+                }
+            }
+        });
+        async function deleteProperty(id) {
+            if(confirm('Are you sure?')) {
+                try { await API.deleteProperty(id); loadProperties(); loadDashboardStats(); } catch (e) { alert('Failed'); }
+            }
+        }
+        function editProperty(id) {
+            window.location.href = `add-property.html?edit=1&id=${id}`;
+        }
+
+        function adminLogout() {
+            localStorage.clear();
+            window.location.href = 'admin-login.html';
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Charts
+        let userChart = null;
+        let propertyChart = null;
+
+        async function loadDashboardStats() {
+            try {
+                const s = await API.getAdminStats();
+                document.getElementById('statTotalUsers').innerText = s.total_users || 0;
+                document.getElementById('statTotalProperties').innerText = s.total_properties || 0;
+                document.getElementById('statTotalRevenue').innerText = `PKR ${(s.total_revenue || 0).toLocaleString()}`;
+                const ai = document.getElementById('statTotalAIPredictions');
+                if(ai) ai.innerText = (s.ai_predictions || 0).toLocaleString();
+                renderCharts(s);
+                loadDashboardUsers();
+            } catch (e) {}
+        }
+
+        async function loadDashboardUsers() {
+            const table = document.getElementById('dashboardUserTable');
+            if(!table) return;
+            try {
+                const res = await API.getAdminUsers();
+                table.innerHTML = res.data.slice(0, 5).map(u => `
+                    <tr>
+                        <td><div class="d-flex align-items-center"><span class="fw-medium">${u.name}</span></div></td>
+                        <td class="text-muted">${u.email}</td>
+                        <td><span class="badge-status badge-primary">${u.role}</span></td>
+                        <td><span class="badge-status badge-success">${u.status}</span></td>
+                        <td class="text-muted small">${u.joined || 'N/A'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {}
+        }
+
+        function renderCharts(s) {
+            const cp = document.getElementById('propertyChart').getContext('2d');
+            if(propertyChart) propertyChart.destroy();
+            propertyChart = new Chart(cp, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Uploads',
+                        data: [Math.floor(s.total_properties*0.1), Math.floor(s.total_properties*0.2), Math.floor(s.total_properties*0.15), Math.floor(s.total_properties*0.3), Math.floor(s.total_properties*0.25), s.total_properties],
+                        borderColor: '#4F46E5', backgroundColor: 'rgba(79, 70, 229, 0.1)', tension: 0.4, fill: true
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const cu = document.getElementById('userChart').getContext('2d');
+            if(userChart) userChart.destroy();
+            userChart = new Chart(cu, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Buyers', 'Sellers', 'Admins'],
+                    datasets: [{
+                        data: [s.user_roles.buyers, s.user_roles.sellers, s.user_roles.admins],
+                        backgroundColor: ['#4F46E5', '#10B981', '#EF4444'], borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        
+    </script>
+</body>
+</html>

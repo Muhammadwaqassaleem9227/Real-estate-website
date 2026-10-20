@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - LuxeEstate</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm custom-navbar navbar-light">
+        <div class="container">
+            <a class="navbar-brand text-dark" href="index.html">
+                <i class="fa-solid fa-building-user me-2 text-primary"></i>
+                <span class="fw-bold">LuxeEstate</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="listings.html">Listings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="add-property.html">Add Property</a></li>
+                    <li class="nav-item"><a class="nav-link" href="predict.html"><i
+                                class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Predict Price</a></li>
+                    <li class="nav-item"><a class="nav-link" href="favorites.html"><i class="fa-regular fa-heart"></i>
+                            Favorites</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link active" href="notifications.html">
+                            <i class="fa-solid fa-bell"></i>
+                            <span id="navNotificationBadge"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                                style="font-size: 0.6rem;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="admin-login.html"><i class="fa-solid fa-shield-halved me-1"></i> Admin</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark rounded-pill px-4 dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fa-regular fa-user me-2"></i> My Account
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                                <li><a class="dropdown-item" href="profile.html">Profile Settings</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="window.openMyListModal(event)">My Listings</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="window.API.logout()">Logout</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container py-5 mt-5">
+        <div class="row justify-content-center pt-4">
+            <div class="col-lg-8">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom reveal reveal-up">
+                    <h2 class="fw-bold mb-0">Notifications</h2>
+                    <button class="btn btn-light text-primary fw-medium rounded-pill btn-sm"><i
+                            class="fa-solid fa-check-double me-1"></i> Mark all as read</button>
+                </div>
+
+                <div id="notificationsContainer" class="d-flex flex-column gap-3">
+                    <div class="text-center py-5 bg-white shadow-sm rounded-4 text-muted">
+                        <i class="fa-solid fa-bell fs-1 mb-2 opacity-25"></i>
+                        <p>Loading notifications...</p>
+                    </div>
+                </div>
+
+                <!-- Payments Section -->
+                <div class="mt-5 reveal reveal-up">
+                    <h2 class="fw-bold mb-4 pb-1">Recent Transactions</h2>
+                    <div id="paymentsContainer" class="d-flex flex-column gap-3">
+                        <div class="text-center py-5 bg-white shadow-sm rounded-4 text-muted">
+                            <i class="fa-solid fa-receipt fs-1 mb-2 opacity-25"></i>
+                            <p>Loading your payments...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!API.isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const notificationsContainer = document.getElementById('notificationsContainer');
+            const paymentsContainer = document.getElementById('paymentsContainer');
+            let notificationItems = [];
+
+            const renderNotifications = (notes) => {
+                notificationItems = notes;
+                if (notes.length === 0) {
+                    notificationsContainer.innerHTML = `
+                        <div class="text-center py-5 bg-white shadow-sm rounded-4 text-muted">
+                            <i class="fa-solid fa-bell-slash fs-1 mb-2 opacity-25"></i>
+                            <p>No notifications or messages yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                notificationsContainer.innerHTML = notes.map(note => {
+                    const propertyId = note.property_id ? note.property_id : 'null';
+                    return `
+                        <div class="card border-0 rounded-4 shadow-sm p-3 position-relative ${note.is_read ? '' : 'bg-primary-soft'}"
+                             onclick="handleNotificationClick(${note.id}, ${propertyId})" style="cursor: pointer;">
+                            ${note.is_read ? '' : `
+                            <span class="position-absolute top-50 start-0 translate-middle p-2 bg-primary border border-light rounded-circle"
+                                  style="left: 0 !important; transform: translate(-50%, -50%) !important;"></span>
+                            `}
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-white text-${note.type || 'primary'} rounded-circle d-flex flex-shrink-0 align-items-center justify-content-center shadow-sm me-3"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fa-solid ${getIcon(note.title)}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">${note.title}</h6>
+                                    <p class="text-muted small mb-0">${note.message}</p>
+                                </div>
+                                <div class="ms-3 text-end flex-shrink-0">
+                                    <small class="text-muted fw-semibold" data-notification-created-at="${note.created_at}">${formatTime(note.created_at)}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            const refreshNotificationTimes = () => {
+                document.querySelectorAll('[data-notification-created-at]').forEach(element => {
+                    element.textContent = formatTime(element.dataset.notificationCreatedAt);
+                });
+            };
+
+            const loadNotifications = async () => {
+                try {
+                    const response = await API.getNotifications();
+                    const notes = response.data || [];
+                    renderNotifications(notes);
+                    refreshNotificationTimes();
+                } catch (err) {
+                    notificationsContainer.innerHTML = '<div class="alert alert-danger">Failed to load notifications.</div>';
+                }
+            };
+
+            await loadNotifications();
+            setInterval(refreshNotificationTimes, 30000);
+
+            // Load Payments
+            try {
+                const payRes = await API.getMyPayments();
+                const payments = payRes.data;
+                if (payments.length === 0) {
+                    paymentsContainer.innerHTML = `
+                        <div class="text-center py-4 bg-white shadow-sm rounded-4 text-muted border-dashed">
+                            <p class="mb-0">No payment history found.</p>
+                        </div>`;
+                } else {
+                    paymentsContainer.innerHTML = payments.map(p => `
+                        <div class="card border-0 rounded-4 shadow-sm p-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-1">Payment for Property #${p.property_id}</h6>
+                                    <p class="text-muted small mb-0">ID: ${p.transaction_id} | Status: <span class="badge bg-success-soft text-success">${p.payment_status}</span></p>
+                                </div>
+                                <div class="text-end">
+                                    <h6 class="fw-bold text-primary mb-1">PKR ${p.amount.toLocaleString()}</h6>
+                                    <small class="text-muted">${formatTime(p.created_at)}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                paymentsContainer.innerHTML = '<div class="alert alert-danger">Failed to load payments.</div>';
+            }
+        });
+
+        function getIcon(title) {
+            const normalizedTitle = (title || '').toLowerCase();
+            if (normalizedTitle.includes('property')) return 'fa-house-chimney-medical';
+            if (normalizedTitle.includes('welcome')) return 'fa-user-check';
+            if (normalizedTitle.includes('payment')) return 'fa-receipt';
+            if (normalizedTitle.includes('password')) return 'fa-shield-halved';
+            if (normalizedTitle.includes('message')) return 'fa-comment-dots';
+            return 'fa-bell';
+        }
+
+        function formatTime(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + ' mins ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+            return Math.floor(diff / 86400) + ' days ago';
+        }
+
+        async function handleNotificationClick(id, propertyId) {
+            try {
+                await API.markNotificationRead(id);
+            } catch (e) {}
+
+            if (propertyId) {
+                window.location.href = `details.html?id=${propertyId}`;
+                return;
+            }
+
+            window.location.reload();
+        }
+    </script>
+</body>
+
+</html>

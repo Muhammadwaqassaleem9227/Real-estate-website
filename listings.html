@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties - LuxeEstate</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top custom-navbar bg-white shadow-sm navbar-light">
+        <div class="container">
+            <a class="navbar-brand text-dark" href="/">
+                <i class="fa-solid fa-building-user me-2 text-primary"></i>
+                <span class="fw-bold">LuxeEstate</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="listings.html">Listings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="add-property.html">Add Property</a></li>
+                    <li class="nav-item"><a class="nav-link" href="predict.html"><i
+                                class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Predict Price</a></li>
+                    <li class="nav-item"><a class="nav-link" href="favorites.html"><i class="fa-regular fa-heart"></i>
+                            Favorites</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="notifications.html">
+                            <i class="fa-regular fa-bell"></i>
+                            <span id="navNotificationBadge"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                                style="font-size: 0.6rem;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="admin-login.html"><i class="fa-solid fa-shield-halved me-1"></i> Admin</a></li>
+                    <li class="nav-item ms-lg-3"><a class="btn btn-outline-primary rounded-pill px-4 me-2"
+                            href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary rounded-pill px-4 shadow-sm" href="signup.html">Sign
+                            Up</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="bg-primary text-white pt-5 pb-5 mt-5">
+        <div class="container pt-4 pb-2">
+            <div class="row align-items-center reveal reveal-up">
+                <div class="col-md-6">
+                    <h1 class="display-5 fw-bold mb-2">Property Listings</h1>
+                    <p class="lead mb-0 text-white-50">Discover over 500+ premium properties available right now.</p>
+                </div>
+                <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-light rounded-pill px-4 dropdown-toggle fw-medium" type="button"
+                            data-bs-toggle="dropdown" id="sortDropdownBtn">
+                            Sort by: Newest
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4" id="sortOptions">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="newest">Newest First</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price-asc">Price: Low to High</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price-desc">Price: High to Low</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="popular">Most Popular</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="row g-4">
+
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 reveal reveal-left">
+                <div class="filter-sidebar">
+                    <h4 class="fw-bold mb-4 d-flex align-items-center"><i
+                            class="fa-solid fa-sliders me-2 text-primary"></i> Filters</h4>
+
+                    <form>
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">City / Location</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i
+                                        class="fa-solid fa-location-dot"></i></span>
+                                <select id="filterLoc" class="form-select bg-light border-start-0 ps-0 rounded-end-pill shadow-none text-muted">
+                                    <option value="">Any Location</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Property Type -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">Property Type</label>
+                            <select id="filterType" class="form-select rounded-pill shadow-none bg-light text-muted">
+                                <option value="all">All Types</option>
+                                <option value="house">House</option>
+                                <option value="apartment">Apartment for Rent</option>
+                                <option value="plot">Plot</option>
+                                <option value="shop">Shop</option>
+                            </select>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">Max Price (PKR)</label>
+                            <input type="number" id="filterMaxPrice" class="form-control rounded-pill bg-light shadow-none" placeholder="e.g. 15000000" min="0">
+                        </div>
+
+                        <!-- Area Size -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">Size (Marla)</label>
+                            <input type="number" id="filterArea" class="form-control rounded-pill bg-light shadow-none" placeholder="e.g. 10" min="0">
+                        </div>
+
+                        <!-- Additional Features -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark mb-3">Amenities</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input shadow-none" type="checkbox" id="feature1">
+                                <label class="form-check-label text-muted" for="feature1">Swimming Pool</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input shadow-none" type="checkbox" id="feature2" checked>
+                                <label class="form-check-label text-muted" for="feature2">Garage/Parking</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input shadow-none" type="checkbox" id="feature3">
+                                <label class="form-check-label text-muted" for="feature3">Garden</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input shadow-none" type="checkbox" id="feature4">
+                                <label class="form-check-label text-muted" for="feature4">Security System</label>
+                            </div>
+                        </div>
+
+                        <!-- Apply Button -->
+                        <button type="button" id="applyFiltersBtn"
+                            class="btn btn-primary w-100 rounded-pill py-3 fw-bold mt-2 shadow-sm">Apply
+                            Filters</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Grid Layout -->
+            <div class="col-lg-9">
+                <!-- Search Stats -->
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <span class="text-muted fw-medium"><span class="text-dark fw-bold h5 mb-0" id="propertyCount">0</span> Properties
+                        found</span>
+                    <div class="btn-group shadow-sm">
+                        <button class="btn btn-light border active"><i class="fa-solid fa-grid-2"></i></button>
+                        <button class="btn btn-light border"><i class="fa-solid fa-list"></i></button>
+                    </div>
+                </div>
+
+                <div class="row g-4 reveal-stagger" id="listingsContainer">
+                    <!-- Properties will be loaded here dynamically via API -->
+                </div>
+
+                <!-- Pagination -->
+                <nav class="mt-5 d-flex justify-content-center">
+                    <ul class="pagination border-0 shadow-sm rounded-pill overflow-hidden bg-white">
+                        <li class="page-item disabled"><a class="page-link border-0 py-3 px-4 text-dark" href="#"><i
+                                    class="fa-solid fa-chevron-left"></i></a></li>
+                        <li class="page-item active"><a class="page-link border-0 py-3 px-4" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link border-0 py-3 px-4 text-dark" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link border-0 py-3 px-4 text-dark" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link border-0 py-3 px-4 text-dark" href="#"><i
+                                    class="fa-solid fa-chevron-right"></i></a></li>
+                    </ul>
+                </nav>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer goes here (omitted for brevity, assume JS handles common footer or included manually) -->
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/main.js?v=3"></script>
+</body>
+
+</html>
